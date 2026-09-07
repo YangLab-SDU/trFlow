@@ -1,0 +1,24 @@
+{
+  "output_dir": "outputs",
+  "samples": [
+    {
+      "name": "8CRJ_8CRI",
+      "fasta_path": "example/fasta/8CRJ_8CRI.fasta",
+      "msa_path": "example/msa/8CRJ_8CRI.a3m"
+    }
+  ],
+  "options": {
+    "sample_num": 10,
+    "geometric_exploration": true,
+    "single_step": false,
+    "steps": 2,
+    "random_step": true,
+    "random_step_size": true,
+    "models": [
+      "Xray",
+      "NMR"
+    ],
+    "parallel": false,
+    "save_repr_npz": false
+  }
+}

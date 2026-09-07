@@ -1,0 +1,137 @@
+{
+  "sample_name": "6HKR_7OXW",
+  "seed": 1890441930,
+  "options": {
+    "sample_num": 10,
+    "geometric_exploration": true,
+    "single_step": false,
+    "steps": 2,
+    "random_step": true,
+    "random_step_size": true,
+    "models": [
+      "Xray",
+      "NMR"
+    ],
+    "parallel": false,
+    "save_repr_npz": false
+  },
+  "env": {
+    "trx2flow_xray": "models/trx2flow_xray.pth",
+    "trx2flow_nmr": "models/trx2flow_nmr.pth",
+    "esm_weights": "models/esm_msa1_t12_100M_UR50S.pt",
+    "openfold": {
+      "python": "",
+      "runner": "openfold/run_pretrained_openfold_multi.py",
+      "model_name": "model_5_ptm",
+      "param_path": "models/openfold_params_model_5_ptm.npz",
+      "timeout_seconds": 7200,
+      "cpus": 4
+    },
+    "gpus": [
+      0
+    ]
+  },
+  "init": {
+    "source": "openfold",
+    "pdb": "outputs/6HKR_7OXW/6HKR_7OXW_init.pdb"
+  },
+  "updated": {
+    "Xray": {
+      "pdb": "outputs/6HKR_7OXW/6HKR_7OXW_updated_Xray.pdb",
+      "n_iters": 60,
+      "converged": true,
+      "mean_plddt": 0.948
+    },
+    "NMR": {
+      "pdb": "outputs/6HKR_7OXW/6HKR_7OXW_updated_NMR.pdb",
+      "n_iters": 127,
+      "converged": true,
+      "mean_plddt": 0.871
+    }
+  },
+  "stage_times": {
+    "stage1_openfold": 20.18,
+    "stage1_repr_Xray": 1.1,
+    "stage1_repr_NMR": 1.12,
+    "stage2_explore_Xray": 9.38,
+    "stage2_explore_NMR": 19.84,
+    "stage3_generation": 5.79,
+    "total": {
+      "start": "2026-09-07T15:14:44",
+      "end": "2026-09-07T15:15:42",
+      "seconds": 57.56
+    }
+  },
+  "predictions": [
+    {
+      "index": 1,
+      "file": "6HKR_7OXW_sample_001.pdb",
+      "model": "Xray",
+      "init_source": "init",
+      "mean_plddt": 0.761
+    },
+    {
+      "index": 2,
+      "file": "6HKR_7OXW_sample_002.pdb",
+      "model": "Xray",
+      "init_source": "init",
+      "mean_plddt": 0.898
+    },
+    {
+      "index": 3,
+      "file": "6HKR_7OXW_sample_003.pdb",
+      "model": "Xray",
+      "init_source": "init",
+      "mean_plddt": 0.892
+    },
+    {
+      "index": 4,
+      "file": "6HKR_7OXW_sample_004.pdb",
+      "model": "Xray",
+      "init_source": "updated",
+      "mean_plddt": 0.87
+    },
+    {
+      "index": 5,
+      "file": "6HKR_7OXW_sample_005.pdb",
+      "model": "Xray",
+      "init_source": "updated",
+      "mean_plddt": 0.824
+    },
+    {
+      "index": 6,
+      "file": "6HKR_7OXW_sample_006.pdb",
+      "model": "Xray",
+      "init_source": "updated",
+      "mean_plddt": 0.613
+    },
+    {
+      "index": 7,
+      "file": "6HKR_7OXW_sample_007.pdb",
+      "model": "NMR",
+      "init_source": "init",
+      "mean_plddt": 0.632
+    },
+    {
+      "index": 8,
+      "file": "6HKR_7OXW_sample_008.pdb",
+      "model": "NMR",
+      "init_source": "init",
+      "mean_plddt": 0.591
+    },
+    {
+      "index": 9,
+      "file": "6HKR_7OXW_sample_009.pdb",
+      "model": "NMR",
+      "init_source": "updated",
+      "mean_plddt": 0.786
+    },
+    {
+      "index": 10,
+      "file": "6HKR_7OXW_sample_010.pdb",
+      "model": "NMR",
+      "init_source": "updated",
+      "mean_plddt": 0.606
+    }
+  ]
+}

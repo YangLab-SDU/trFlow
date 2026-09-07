@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "trx2flow"
+version = "0.1.0"
+description = "Protein conformation sampling with flow matching"
+readme = "README.md"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+  "torch==2.6.0",
+  "numpy<2",
+  "scipy>=1.7",
+  "biopython==1.80",
+  "einops",
+  "ml-collections",
+  "absl-py",
+  "pytorch-lightning",
+  "tqdm",
+  "dm-tree==0.1.9",
+]
+
+[project.scripts]
+trX2flow = "trx2flow.cli:main"
+
+[tool.setuptools]
+py-modules = ["trX2flow"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["trx2flow*", "esm*"]

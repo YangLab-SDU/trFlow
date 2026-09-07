@@ -1,0 +1,24 @@
+# Use the CUDA 11.8 wheel so this matches environment.yml and works with
+# NVIDIA 535-series drivers. CPU-only users may install a matching torch build
+# first, then install this project with `pip install -e . --no-deps`.
+--extra-index-url https://download.pytorch.org/whl/cu118
+torch==2.6.0+cu118
+
+numpy<2                 # OpenFold (2021) uses np.float/old APIs removed in numpy 2
+scipy>=1.7
+biopython==1.80         # Bio.PDB / Bio.SeqIO (trx2flow + vendored OpenFold)
+einops                  # trx2flow/networks.py + trRosettaX2 modules
+
+# OpenFold init-structure subprocess
+ml_collections
+absl-py
+pytorch_lightning
+tqdm
+# dm-tree: newer PyPI releases only ship sdists that fail to build under cp311;
+# pin 0.1.9 (has a manylinux wheel) and force binary (e.g. --only-binary dm-tree).
+dm-tree==0.1.9
+
+# ESM-MSA-1b is vendored at esm/; no separate `esm` install is needed.
+# run_trx2flow.py puts the vendored copy first
+# on sys.path. If you also install `esm` from PyPI, keep it at the vendored
+# equivalent `fair-esm==2.0.0` to avoid a silent shadowing.
