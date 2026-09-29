@@ -1,6 +1,6 @@
 ```text
     .            oooooooooooo oooo
-  .o8            `888'     `8 `888
+  .o8            888'     `8 `888
 .o888oo oooo d8b 888          888   .ooooo.  oooo oooo    ooo
   888   `888""8P 888oooo8     888  d88' `88b  `88. `88.  .8'
   888    888     888    "     888  888   888   `88..]88..8'
