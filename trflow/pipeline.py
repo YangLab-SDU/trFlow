@@ -6,7 +6,7 @@ Stage 2: geometric exploration (optional) -> one updated structure per model.
 Stage 3: sample generation along the model/init-source paths until ``sample_num``.
 
 This is the default (``parallel=False``) execution path. Output layout per
-sample lives under ``{output_dir}/{sample_name}/``; see ``trx2flow.output``.
+sample lives under ``{output_dir}/{sample_name}/``; see ``trflow.output``.
 """
 from __future__ import annotations
 

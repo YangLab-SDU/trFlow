@@ -44,8 +44,8 @@ class OpenFoldConfig:
 
 @dataclass
 class EnvConfig:
-    trx2flow_xray: str = "models/trx2flow_xray.pth"
-    trx2flow_nmr: str = "models/trx2flow_nmr.pth"
+    trflow_xray: str = "models/trflow_xray.pth"
+    trflow_nmr: str = "models/trflow_nmr.pth"
     esm_weights: str = "models/esm_msa1_t12_100M_UR50S.pt"
     openfold: OpenFoldConfig = field(default_factory=OpenFoldConfig)
     gpus: List[int] = field(default_factory=lambda: [0])
@@ -54,8 +54,8 @@ class EnvConfig:
     def from_dict(cls, d: Dict[str, Any]) -> "EnvConfig":
         d = d or {}
         return cls(
-            trx2flow_xray=d.get("trx2flow_xray", cls.trx2flow_xray),
-            trx2flow_nmr=d.get("trx2flow_nmr", cls.trx2flow_nmr),
+            trflow_xray=d.get("trflow_xray", cls.trflow_xray),
+            trflow_nmr=d.get("trflow_nmr", cls.trflow_nmr),
             esm_weights=d.get("esm_weights", cls.esm_weights),
             openfold=OpenFoldConfig.from_dict(d.get("openfold")),
             gpus=d.get("gpus", [0]),
@@ -63,7 +63,7 @@ class EnvConfig:
 
     def resolve(self, repo: Path = REPO) -> "EnvConfig":
         """Resolve relative paths against ``repo`` (in place)."""
-        for attr in ("trx2flow_xray", "trx2flow_nmr", "esm_weights"):
+        for attr in ("trflow_xray", "trflow_nmr", "esm_weights"):
             p = Path(getattr(self, attr))
             if not p.is_absolute():
                 setattr(self, attr, str(repo / p))
@@ -78,9 +78,9 @@ class EnvConfig:
 
     def model_checkpoint(self, model: str) -> str:
         if model == "Xray":
-            return self.trx2flow_xray
+            return self.trflow_xray
         if model == "NMR":
-            return self.trx2flow_nmr
+            return self.trflow_nmr
         raise ValueError(f"unknown model '{model}', expected one of {MODEL_NAMES}")
 
 
@@ -173,8 +173,8 @@ def load_user_config(path: str) -> UserConfig:
 def env_to_dict(env: EnvConfig) -> Dict[str, Any]:
     """Serializable (json-safe) snapshot of the env config for input.json."""
     return {
-        "trx2flow_xray": env.trx2flow_xray,
-        "trx2flow_nmr": env.trx2flow_nmr,
+        "trflow_xray": env.trflow_xray,
+        "trflow_nmr": env.trflow_nmr,
         "esm_weights": env.esm_weights,
         "openfold": {
             "python": env.openfold.python,

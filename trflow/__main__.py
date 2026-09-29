@@ -1,4 +1,4 @@
-"""Allow ``python -m trx2flow`` to run the command-line interface."""
+"""Allow ``python -m trflow`` to run the command-line interface."""
 
 from .cli import main
 

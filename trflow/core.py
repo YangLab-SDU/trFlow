@@ -5,9 +5,9 @@ This module owns the MSA/repr machinery (``parse_a3m``, ``aa_to_index``,
 data container ``Inf_StruData`` and the main ``FlowInferenceCore`` (repr
 extraction, structure updates, single-step sampling). Key design points:
 
-  * npz output is handled by ``trx2flow.output``; ``get_repr`` returns tensors
+  * npz output is handled by ``trflow.output``; ``get_repr`` returns tensors
     only.
-  * ESM weights are loaded once and cached (``trx2flow.models._ESM_CACHE``)
+  * ESM weights are loaded once and cached (``trflow.models._ESM_CACHE``)
     instead of being reloaded on every ``get_repr`` call.
   * ``flow_mode`` is fixed to ``'iterative'`` (``dist_to_39`` encoding).
   * ``steps<=1`` (``single_step``) returns schedule ``[1.0, 0.0]`` and stores
@@ -163,7 +163,7 @@ class FlowInferenceCore:
     """One (repr + structure) model pair on one device, plus the cached ESM model."""
 
     def __init__(self, model_name: str, ckpt_path: str, esm_path: str, device):
-        from trx2flow.models import get_esm_model, get_model
+        from trflow.models import get_esm_model, get_model
 
         self.model_name = model_name
         self.device = device

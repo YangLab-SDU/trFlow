@@ -3,7 +3,7 @@
 Stages run on a shared ``ProcessPoolExecutor`` (spawn context — fork + PyTorch
 GPU is unsafe). GPU tensors never cross process boundaries; intermediate
 representations / pseudo-atom coordinates are exchanged as npz files
-(``trx2flow.iohandlers``). Samples in a batch stay sequential; only the stages
+(``trflow.iohandlers``). Samples in a batch stay sequential; only the stages
 inside a sample are parallelised.
 
   Stage 1: OpenFold init structure + per-model representations, in parallel.
@@ -12,7 +12,7 @@ inside a sample are parallelised.
            model, so VRAM stays bounded).
 
 RNG notes: every RNG-consuming task (geometric exploration, each sampling path)
-is seeded via ``trx2flow.seed.task_seed`` from the sample seed, identically in
+is seeded via ``trflow.seed.task_seed`` from the sample seed, identically in
 the serial and parallel paths. Each sample draws a fresh noise vector from
 ``HarmonicPrior.sample`` (which consumes the global torch RNG), so without this
 per-task seeding a parallel run could never replay the sequential process's

@@ -38,4 +38,8 @@ openfold/openfold/resources/params/
 
 # Misc
 *.log
+
+# Build artifacts
+build/
+dist/
 .DS_Store

@@ -1,12 +1,12 @@
-"""Command-line interface for trX2-Flow.
+"""Command-line interface for trFlow.
 
 Primary interface::
 
-    trX2flow predict INPUT [options]
-    trX2flow evaluate --pred-dir PREDICTIONS --native-dir REFERENCES [options]
+    trFlow predict INPUT [options]
+    trFlow evaluate --pred-dir PREDICTIONS --native-dir REFERENCES [options]
 
 ``INPUT`` may be a JSON run configuration or a FASTA file. The original
-``python -m trX2flow``/``python -m trx2flow`` and ``--input``/``--fasta``
+``python -m trFlow``/``python -m trflow`` and ``--input``/``--fasta``
 forms remain accepted for compatibility.
 """
 from __future__ import annotations
@@ -31,8 +31,8 @@ from .validation import validate_env, validate_user_config
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="trX2flow",
-        description="Sample protein conformations with trX2-Flow.",
+        prog="trFlow",
+        description="Sample protein conformations with trFlow.",
     )
     commands = parser.add_subparsers(dest="command", required=True)
     predict = commands.add_parser(

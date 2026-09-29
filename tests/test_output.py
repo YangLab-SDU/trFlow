@@ -1,8 +1,8 @@
 import unittest
 from pathlib import Path
 
-from trx2flow.config import REPO
-from trx2flow.output import _portable_paths
+from trflow.config import REPO
+from trflow.output import _portable_paths
 
 
 class PortablePathTests(unittest.TestCase):
@@ -20,7 +20,7 @@ class PortablePathTests(unittest.TestCase):
         )
 
     def test_external_absolute_path_is_preserved(self):
-        external = Path("/opt/trx2flow/python")
+        external = Path("/opt/trflow/python")
         self.assertEqual(_portable_paths(str(external)), str(external))
 
 

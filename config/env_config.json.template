@@ -1,6 +1,6 @@
 {
-    "trx2flow_xray": "models/trx2flow_xray.pth",
-    "trx2flow_nmr": "models/trx2flow_nmr.pth",
+    "trflow_xray": "models/trflow_xray.pth",
+    "trflow_nmr": "models/trflow_nmr.pth",
     "esm_weights": "models/esm_msa1_t12_100M_UR50S.pt",
     "openfold": {
         "python": "",

@@ -1,4 +1,4 @@
-name: trx2flow
+name: trflow
 channels:
   - conda-forge
 dependencies:
@@ -6,8 +6,8 @@ dependencies:
   - pip
   - numpy<2                 # OpenFold (2021) uses np.float/old APIs removed in numpy 2
   - scipy>=1.7
-  - biopython==1.80         # Bio.PDB / Bio.SeqIO (trx2flow + vendored OpenFold)
-  - einops                  # trx2flow/networks.py + trRosettaX2 modules
+  - biopython==1.80         # Bio.PDB / Bio.SeqIO (trflow + vendored OpenFold)
+  - einops                  # trflow/networks.py + trRosettaX2 modules
   - pip:
       # CUDA 11.8 supports the NVIDIA 535-series driver used on the test node.
       - --extra-index-url https://download.pytorch.org/whl/cu118
@@ -22,4 +22,4 @@ dependencies:
       - --only-binary dm-tree
       - dm-tree==0.1.9
       # ESM-MSA-1b is VENDORED at esm/; no `esm` install needed.
-      # run_trx2flow.py puts the vendored copy first on sys.path.
+      # run_trflow.py puts the vendored copy first on sys.path.

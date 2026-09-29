@@ -54,8 +54,8 @@ def validate_user_config(cfg: UserConfig) -> UserConfig:
 def validate_env(env: EnvConfig) -> EnvConfig:
     missing = []
     for label, p in (
-        ("Xray checkpoint", env.trx2flow_xray),
-        ("NMR checkpoint", env.trx2flow_nmr),
+        ("Xray checkpoint", env.trflow_xray),
+        ("NMR checkpoint", env.trflow_nmr),
         ("ESM weights", env.esm_weights),
         ("OpenFold runner", env.openfold.runner),
         ("OpenFold params", env.openfold.param_path),

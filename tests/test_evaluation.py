@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from trx2flow import evaluation
+from trflow import evaluation
 
 
 class EvaluationTests(unittest.TestCase):
@@ -35,7 +35,7 @@ class EvaluationTests(unittest.TestCase):
             {"returncode": 0, "stdout": output, "stderr": ""},
         )()
         with patch(
-            "trx2flow.evaluation.subprocess.run",
+            "trflow.evaluation.subprocess.run",
             return_value=completed,
         ) as run:
             self.assertEqual(

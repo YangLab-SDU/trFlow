@@ -6,16 +6,7 @@ import sys
 import textwrap
 from typing import Iterable, Tuple
 
-
-LOGO = r'''
-    .            ooooooo  ooooo   .oooo.           oooooooooooo oooo
-  .o8             `8888    d8'  .dP""Y88b          `888'     `8 `888
-.o888oo oooo d8b    Y888..8P          ]8P'          888          888   .ooooo.  oooo oooo    ooo
-  888   `888""8P     `8888'         .d8P'           888oooo8     888  d88' `88b  `88. `88.  .8'
-  888    888        .8PY888.      .dP'     8888888  888    "     888  888   888   `88..]88..8'
-  888 .  888       d8'  `888b   .oP     .o          888          888  888   888    `888'`888'
-  "888" d888b    o888o  o88888o 8888888888         o888o        o888o `Y8bod8P'     `8'  `8'
-'''.strip("\n")
+LOGO = "trFlow"
 
 _WIDTH = 104
 
@@ -27,7 +18,7 @@ def _color(code: str, value: object) -> str:
 
 def print_logo() -> None:
     print(_color("1;36", LOGO))
-    print(_color("2", "                             Protein conformation sampling with flow matching"))
+    print(_color("2", "Protein conformation sampling with flow matching"))
 
 
 def panel(title: str, rows: Iterable[Tuple[str, object]]) -> None:

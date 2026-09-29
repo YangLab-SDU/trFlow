@@ -3,7 +3,7 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "trx2flow"
+name = "trflow"
 version = "0.1.0"
 description = "Protein conformation sampling with flow matching"
 readme = "README.md"
@@ -22,11 +22,11 @@ dependencies = [
 ]
 
 [project.scripts]
-trX2flow = "trx2flow.cli:main"
+trFlow = "trflow.cli:main"
 
 [tool.setuptools]
-py-modules = ["trX2flow"]
+py-modules = ["trFlow"]
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["trx2flow*", "esm*"]
+include = ["trflow*", "esm*"]

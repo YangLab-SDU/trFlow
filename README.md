@@ -8,7 +8,7 @@
   "888" d888b    o888o  o88888o 8888888888         o888o        o888o `Y8bod8P'     `8'  `8'
 ```
 
-# trX2-Flow
+# trFlow
 
 Protein conformation sampling with flow matching.
 
@@ -16,7 +16,7 @@ Protein conformation sampling with flow matching.
 
 ## Overview
 
-trX2-Flow generates alternative protein conformations from a FASTA sequence
+trFlow generates alternative protein conformations from a FASTA sequence
 and an A3M multiple-sequence alignment (MSA). It can obtain an initial structure
 with the bundled OpenFold inference code or start from a user-provided PDB.
 
@@ -37,7 +37,7 @@ paths are required.
 Clone or download this repository, then enter its root directory:
 
 ```bash
-cd trX2flow
+cd trFlow
 ```
 
 It is recommended to use `mamba` to manage the Python dependencies. Follow the
@@ -50,11 +50,11 @@ installed, install Mamba into the base environment to avoid conflicts:
 conda install -n base mamba -c conda-forge
 ```
 
-Create the trX2-Flow environment and install the command-line entry point:
+Create the trFlow environment and install the command-line entry point:
 
 ```bash
 mamba env create -f environment.yml
-mamba activate trx2flow
+mamba activate trflow
 python -m pip install -e .
 cp config/env_config.json.template config/env_config.json
 ```
@@ -71,8 +71,8 @@ Place the following model files in `models/`:
 
 | File | Description |
 | --- | --- |
-| `trx2flow_xray.pth` | trX2-Flow Xray checkpoint |
-| `trx2flow_nmr.pth` | trX2-Flow NMR checkpoint |
+| `trflow_xray.pth` | trFlow Xray checkpoint |
+| `trflow_nmr.pth` | trFlow NMR checkpoint |
 | `esm_msa1_t12_100M_UR50S.pt` | ESM-MSA-1b weights |
 | `openfold_params_model_5_ptm.npz` | OpenFold `model_5_ptm` parameters |
 
@@ -86,7 +86,7 @@ GPU indices.
 The command-line interface follows the form:
 
 ```text
-trX2flow predict INPUT [OPTIONS]
+trFlow predict INPUT [OPTIONS]
 ```
 
 `INPUT` may be either a JSON run configuration or a FASTA file.
@@ -98,14 +98,14 @@ batch example (`8CRJ_8CRI` and `6HKR_7OXW`). Both configurations run the
 complete pipeline and generate 10 conformations per target:
 
 ```bash
-trX2flow predict example/example_input.json
-trX2flow predict example/example_batch_input.json
+trFlow predict example/example_input.json
+trFlow predict example/example_batch_input.json
 ```
 
 ### Predict directly from FASTA and A3M
 
 ```bash
-trX2flow predict example/fasta/6HKR_7OXW.fasta \
+trFlow predict example/fasta/6HKR_7OXW.fasta \
   --msa example/msa/6HKR_7OXW.a3m --output-dir outputs \
   --models Xray,NMR --sample-num 10
 ```
@@ -113,17 +113,17 @@ trX2flow predict example/fasta/6HKR_7OXW.fasta \
 To start from an existing structure instead of running OpenFold:
 
 ```bash
-trX2flow predict sequence.fasta --msa alignment.a3m --init-pdb initial.pdb --output-dir outputs
+trFlow predict sequence.fasta --msa alignment.a3m --init-pdb initial.pdb --output-dir outputs
 ```
 
-Run `trX2flow predict --help` for all available options.
+Run `trFlow predict --help` for all available options.
 
 The source-tree interfaces remain available and accept the same prediction
 arguments:
 
 ```bash
-python -m trX2flow predict example/example_input.json
-python run_trx2flow.py predict example/example_input.json
+python -m trFlow predict example/example_input.json
+python run_trflow.py predict example/example_input.json
 ```
 
 ### Common options
@@ -210,7 +210,7 @@ The integrated `evaluate` command compares predicted structures with one or
 more reference PDB files and writes RMSD and TM-score results to CSV:
 
 ```bash
-trX2flow evaluate --pred-dir outputs/8CRJ_8CRI/predictions --native-dir path/to/references --output outputs/evaluation.csv
+trFlow evaluate --pred-dir outputs/8CRJ_8CRI/predictions --native-dir path/to/references --output outputs/evaluation.csv
 ```
 
 TM-score calculations always use sequence alignment (`-seq`). By default the
