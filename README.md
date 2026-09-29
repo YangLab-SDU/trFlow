@@ -1,11 +1,11 @@
 ```text
-    .            oooooooooooo oooo
-  .o8            888'     `8 `888
-.o888oo oooo d8b 888          888   .ooooo.  oooo oooo    ooo
+                 oooooooooooo oooo
+   o8            888'     `8 `888
+ o888oo oooo d8b 888          888   .ooooo.  oooo oooo    ooo
   888   `888""8P 888oooo8     888  d88' `88b  `88. `88.  .8'
   888    888     888    "     888  888   888   `88..]88..8'
   888 .  888     888          888  888   888    `888'`888'
-  "888" d888b    o888o        o888o `Y8bod8P'     `8'  `8'
+  "888" d888b    888          888  `Y8bod8P'     `8'  `8'
 ```
 
 # trFlow
