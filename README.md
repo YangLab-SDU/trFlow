@@ -121,13 +121,8 @@ trFlow predict example/msa/6HKR_7OXW.a3m \
   --models Xray,NMR --sample-num 10
 ```
 
-The first A3M record must be the ungapped target sequence. Run
-`trFlow predict --help` for all available options.
-
-<details>
-<summary><strong>Additional input modes</strong></summary>
-
-To cross-check the A3M query against a separate FASTA file:
+The first A3M record must be the ungapped target sequence. To cross-check it
+against a separate FASTA file:
 
 ```bash
 trFlow predict example/msa/6HKR_7OXW.a3m \
@@ -146,6 +141,8 @@ The original positional FASTA form remains supported:
 trFlow predict sequence.fasta --msa alignment.a3m --output-dir outputs
 ```
 
+Run `trFlow predict --help` for all available options.
+
 The source-tree interfaces remain available and accept the same prediction
 arguments:
 
@@ -154,10 +151,7 @@ python -m trFlow predict example/example_input.json
 python run_trflow.py predict example/example_input.json
 ```
 
-</details>
-
-<details>
-<summary><strong>Command-line options</strong></summary>
+### Common options
 
 | Option | Description |
 | --- | --- |
@@ -182,10 +176,7 @@ No seed is fixed by default. Specify `--seed` or a JSON `seed` value only when
 a reproducible run is required. The effective run seed is recorded in
 `info.json`.
 
-</details>
-
-<details>
-<summary><strong>JSON configuration</strong></summary>
+## JSON input
 
 ```json
 {
@@ -218,10 +209,7 @@ The optional `fasta_path` field enables strict sequence cross-validation.
 When it is omitted, the target sequence is read from the first A3M record.
 FASTA/A3M sequence mismatches are rejected.
 
-</details>
-
-<details>
-<summary><strong>Output layout and metadata</strong></summary>
+## Output
 
 Each target is written to `{output_dir}/{sample_name}/`:
 
@@ -244,8 +232,6 @@ are not committed with these curated outputs. Files that do not apply to the
 selected options are omitted. `input.json`
 stores the resolved run configuration, while `info.json` records stage timing,
 initialization source, generated structures, model paths, and mean pLDDT values.
-
-</details>
 
 ## Evaluation
 
