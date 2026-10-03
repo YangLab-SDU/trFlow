@@ -1,18 +1,6 @@
 <h1 align="center">trFlow: ultrafast all-atom protein conformational ensemble generation via conditional flow matching</h1>
 
 <p align="center">
-  Chenxiao Xiang<sup>#</sup> &nbsp;&middot;&nbsp;
-  Kailong Zhao<sup>#</sup> &nbsp;&middot;&nbsp;
-  <a href="mailto:zhenling@email.sdu.edu.cn">Zhenling Peng</a><sup>*</sup> &nbsp;&middot;&nbsp;
-  <a href="mailto:wenkaiwang@sdu.edu.cn">Wenkai Wang</a><sup>*</sup> &nbsp;&middot;&nbsp;
-  <a href="mailto:yangjy@sdu.edu.cn">Jianyi Yang</a><sup>*</sup>
-</p>
-
-<p align="center">
-  <sub>Shandong University &nbsp;&middot;&nbsp; <sup>#</sup>Equal contribution &nbsp;&middot;&nbsp; <sup>*</sup>Corresponding authors</sub>
-</p>
-
-<p align="center">
   <a href="https://www.python.org/"><img alt="Python 3.11" src="https://img.shields.io/badge/Python-3.11-3776AB?style=flat-square&logo=python&logoColor=white"></a>
   <a href="https://pytorch.org/"><img alt="PyTorch 2.6.0" src="https://img.shields.io/badge/PyTorch-2.6.0-EE4C2C?style=flat-square&logo=pytorch&logoColor=white"></a>
   <a href="LICENSE"><img alt="Apache 2.0 License" src="https://img.shields.io/badge/License-Apache%202.0-D22128?style=flat-square"></a>
@@ -133,8 +121,13 @@ trFlow predict example/msa/6HKR_7OXW.a3m \
   --models Xray,NMR --sample-num 10
 ```
 
-The first A3M record must be the ungapped target sequence. To cross-check it
-against a separate FASTA file:
+The first A3M record must be the ungapped target sequence. Run
+`trFlow predict --help` for all available options.
+
+<details>
+<summary><strong>Additional input modes</strong></summary>
+
+To cross-check the A3M query against a separate FASTA file:
 
 ```bash
 trFlow predict example/msa/6HKR_7OXW.a3m \
@@ -153,8 +146,6 @@ The original positional FASTA form remains supported:
 trFlow predict sequence.fasta --msa alignment.a3m --output-dir outputs
 ```
 
-Run `trFlow predict --help` for all available options.
-
 The source-tree interfaces remain available and accept the same prediction
 arguments:
 
@@ -163,7 +154,10 @@ python -m trFlow predict example/example_input.json
 python run_trflow.py predict example/example_input.json
 ```
 
-### Common options
+</details>
+
+<details>
+<summary><strong>Command-line options</strong></summary>
 
 | Option | Description |
 | --- | --- |
@@ -188,7 +182,10 @@ No seed is fixed by default. Specify `--seed` or a JSON `seed` value only when
 a reproducible run is required. The effective run seed is recorded in
 `info.json`.
 
-## JSON input
+</details>
+
+<details>
+<summary><strong>JSON configuration</strong></summary>
 
 ```json
 {
@@ -221,7 +218,10 @@ The optional `fasta_path` field enables strict sequence cross-validation.
 When it is omitted, the target sequence is read from the first A3M record.
 FASTA/A3M sequence mismatches are rejected.
 
-## Output
+</details>
+
+<details>
+<summary><strong>Output layout and metadata</strong></summary>
 
 Each target is written to `{output_dir}/{sample_name}/`:
 
@@ -244,6 +244,8 @@ are not committed with these curated outputs. Files that do not apply to the
 selected options are omitted. `input.json`
 stores the resolved run configuration, while `info.json` records stage timing,
 initialization source, generated structures, model paths, and mean pLDDT values.
+
+</details>
 
 ## Evaluation
 
