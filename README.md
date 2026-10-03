@@ -1,11 +1,32 @@
 <h1 align="center">trFlow</h1>
 
-<p align="center"><strong>Protein conformation sampling with flow matching</strong></p>
+<p align="center">
+  <strong><em>trFlow: ultrafast all-atom protein conformational ensemble generation via conditional flow matching</em></strong>
+</p>
+
+<p align="center">
+  Chenxiao Xiang<sup>1,#</sup>,
+  Kailong Zhao<sup>1,#</sup>,
+  <a href="mailto:zhenling@email.sdu.edu.cn">Zhenling Peng</a><sup>1,*</sup>,
+  <a href="mailto:wenkaiwang@sdu.edu.cn">Wenkai Wang</a><sup>1,*</sup>,
+  and <a href="mailto:yangjy@sdu.edu.cn">Jianyi Yang</a><sup>1,*</sup>
+</p>
+
+<p align="center">
+  <sup>1</sup>MOE Frontiers Science Center for Nonlinear Expectations,<br>
+  Research Center for Mathematics and Interdisciplinary Sciences,<br>
+  Shandong University, Qingdao 266237, China<br>
+  <sup>#</sup>Equal contribution &nbsp;&middot;&nbsp; <sup>*</sup>Corresponding authors
+</p>
 
 <p align="center">
   <a href="https://www.python.org/"><img alt="Python 3.11" src="https://img.shields.io/badge/Python-3.11-3776AB?style=flat-square&logo=python&logoColor=white"></a>
   <a href="https://pytorch.org/"><img alt="PyTorch 2.6.0" src="https://img.shields.io/badge/PyTorch-2.6.0-EE4C2C?style=flat-square&logo=pytorch&logoColor=white"></a>
   <a href="LICENSE"><img alt="Apache 2.0 License" src="https://img.shields.io/badge/License-Apache%202.0-D22128?style=flat-square"></a>
+</p>
+
+<p align="center">
+  <img src="assets/trflow_workflow.png" alt="Overview of the trFlow conformational ensemble generation workflow" width="100%">
 </p>
 
 ## Overview
