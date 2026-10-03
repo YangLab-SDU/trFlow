@@ -1,8 +1,4 @@
-<h1 align="center">trFlow</h1>
-
-<p align="center">
-  <strong><em>trFlow: ultrafast all-atom protein conformational ensemble generation via conditional flow matching</em></strong>
-</p>
+<h1 align="center">trFlow: ultrafast all-atom protein conformational ensemble generation via conditional flow matching</h1>
 
 <p align="center">
   Chenxiao Xiang<sup>1,#</sup>,
