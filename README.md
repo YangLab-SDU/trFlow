@@ -83,13 +83,13 @@ cp config/env_config.json.template config/env_config.json
 ```
 
 The environment uses the PyTorch 2.6.0 CUDA 11.8 wheel and requires a Linux
-machine with an NVIDIA GPU and a compatible driver. `environment.yml` is the
-canonical dependency definition. For a pip-only setup, create a Python 3.11
-environment, run `python -m pip install -r requirements.txt`, then install
-the command with `python -m pip install -e . --no-deps`.
+machine with an NVIDIA GPU and a compatible driver. `environment.yml` defines
+the tested environment. For a pip-only setup, create a Python 3.11 environment,
+run `python -m pip install -r requirements.txt`, then install the command with
+`python -m pip install -e . --no-deps`.
 
-The local `config/env_config.json` is intentionally ignored by Git. Edit the
-copy created above when using different model paths or GPU indices.
+To use different model paths or GPU indices, edit the local
+`config/env_config.json` created above.
 
 ## Usage
 
@@ -99,8 +99,8 @@ The command-line interface follows the form:
 trFlow predict INPUT [OPTIONS]
 ```
 
-`INPUT` may be a JSON run configuration, an A3M file, or a FASTA file.
-Direct A3M input is recommended.
+`INPUT` may be a JSON run configuration or an A3M file. A FASTA file can also
+be used together with `--msa`; direct A3M input is recommended.
 
 ### Predict from JSON
 
@@ -135,7 +135,8 @@ To start from an existing structure instead of running OpenFold:
 trFlow predict alignment.a3m --init-pdb initial.pdb --output-dir outputs
 ```
 
-The original positional FASTA form remains supported:
+To provide the target sequence explicitly, use a FASTA file together with its
+A3M alignment:
 
 ```bash
 trFlow predict sequence.fasta --msa alignment.a3m --output-dir outputs
@@ -143,24 +144,16 @@ trFlow predict sequence.fasta --msa alignment.a3m --output-dir outputs
 
 Run `trFlow predict --help` for all available options.
 
-The source-tree interfaces remain available and accept the same prediction
-arguments:
-
-```bash
-python -m trFlow predict example/example_input.json
-python run_trflow.py predict example/example_input.json
-```
-
 ### Common options
 
 | Option | Description |
 | --- | --- |
 | `--fasta FILE` | Optional FASTA used to validate the first A3M record |
-| `--msa FILE` | A3M alignment when using positional FASTA input |
-| `--name NAME` | Sample name for direct input |
+| `--msa FILE` | A3M alignment when a FASTA file is used as `INPUT` |
+| `--name NAME` | Set the target name for direct A3M/FASTA input |
 | `--init-pdb FILE` | Use an existing initial structure |
-| `--env FILE` | Use a different environment configuration |
-| `--output-dir DIR` | Override the output directory |
+| `--env FILE` | Use a custom environment configuration |
+| `--output-dir DIR` | Set the output directory |
 | `--sample-num N` | Number of conformations to generate |
 | `--models Xray,NMR` | Select one or both trained models |
 | `--single-step` | Use one structure-model forward per sample |
@@ -202,8 +195,8 @@ a reproducible run is required. The effective run seed is recorded in
 }
 ```
 
-Multiple entries in `samples` are processed as a batch. Values supplied on the
-command line override the corresponding JSON options.
+Multiple entries in `samples` are processed as a batch. Command-line options
+take precedence over the corresponding JSON values.
 
 The optional `fasta_path` field enables strict sequence cross-validation.
 When it is omitted, the target sequence is read from the first A3M record.
@@ -226,31 +219,25 @@ Each target is written to `{output_dir}/{sample_name}/`:
     `-- {sample_name}_sample_001.pdb ...
 ```
 
-The repository's `outputs/` directory contains the complete 10-structure
-results for both included examples. Machine-specific `openfold_log.txt` files
-are not committed with these curated outputs. Files that do not apply to the
-selected options are omitted. `input.json`
-stores the resolved run configuration, while `info.json` records stage timing,
-initialization source, generated structures, model paths, and mean pLDDT values.
+Ready-to-inspect 10-structure results for both examples are included in
+`outputs/`. Files that do not apply to the selected options are omitted.
+`input.json` stores the resolved run configuration, while `info.json` records
+stage timing, initialization source, generated structures, model paths, and
+mean pLDDT values.
 
 ## Evaluation
 
-The integrated `evaluate` command compares predicted structures with one or
-more reference PDB files and writes RMSD and TM-score results to CSV:
+`trFlow evaluate` compares predicted structures with one or more reference PDB
+files and writes RMSD and TM-score results to CSV:
 
 ```bash
 trFlow evaluate --pred-dir outputs/8CRJ_8CRI/predictions --native-dir path/to/references --output outputs/evaluation.csv
 ```
 
 TM-score calculations always use sequence alignment (`-seq`). By default the
-command uses the bundled Linux x86-64 executable at `bin/TMscore`; use
-`--tmscore /path/to/TMscore` to explicitly select another executable (for
-example, on another platform). The original standalone interface is also
-retained:
-
-```bash
-python evaluate.py --pred-dir outputs/8CRJ_8CRI/predictions --native-dir path/to/references
-```
+command uses the bundled Linux x86-64 executable at `bin/TMscore`. Use
+`--tmscore /path/to/TMscore` to select another executable, for example on a
+different platform.
 
 ## Tests
 
