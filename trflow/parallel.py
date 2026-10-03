@@ -47,7 +47,7 @@ from .console import stage_done, stage_skip, stage_start, success, warning
 from .iohandlers import pseudo_beta_from_npz, pseudo_beta_to_npz, reprs_from_npz, reprs_to_npz
 from .sample import INIT_SOURCE, allocate_k, build_paths
 from .seed import resolve_seed, set_seed, task_seed
-from .validation import read_fasta_sequence
+from .validation import resolve_target_sequence
 
 
 # ---------------------------------------------------------------------------
@@ -65,7 +65,7 @@ def _worker_repr(model: str, sample: SampleConfig, env: EnvConfig, gpu_idx: int,
     from .core import FlowInferenceCore
 
     core = FlowInferenceCore(model, env.model_checkpoint(model), env.esm_weights, torch.device(f"cuda:{gpu_idx}"))
-    raw_seq = read_fasta_sequence(sample.fasta_path)
+    raw_seq, _sequence_source, _query_header = resolve_target_sequence(sample)
     mid = core.get_repr(raw_seq, sample.msa_path)
     reprs_to_npz(mid, out_npz)
     return out_npz
@@ -174,12 +174,17 @@ def run_sample_parallel(
 
     seed = resolve_seed(sample.seed, options.seed)
     set_seed(seed)
-    raw_seq = read_fasta_sequence(sample.fasta_path)
+    raw_seq, sequence_source, query_header = resolve_target_sequence(sample)
     L = len(raw_seq)
 
     info = {
         "sample_name": sample.name,
         "seed": seed,
+        "sequence": {
+            "source": sequence_source,
+            "msa_query_header": query_header,
+            "length": L,
+        },
         "options": asdict_safe(options),
         "env": env_to_dict(env),
         "init": {},
@@ -227,7 +232,7 @@ def run_sample_parallel(
         shutil.copy(init_pdb, init_pdb_local)
     init_len = _pdb_pseudo_beta_len(init_pdb_local)
     if init_len != L:
-        raise ValueError(f"[{sample.name}] init structure length {init_len} != fasta length {L}: {init_pdb_local}")
+        raise ValueError(f"[{sample.name}] init structure length {init_len} != target length {L}: {init_pdb_local}")
     info["init"] = {"source": init_source, "pdb": str(init_pdb_local)}
 
     # ---------------------------------------------------------------- Stage 2

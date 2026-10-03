@@ -16,9 +16,11 @@ Protein conformation sampling with flow matching.
 
 ## Overview
 
-trFlow generates alternative protein conformations from a FASTA sequence
-and an A3M multiple-sequence alignment (MSA). It can obtain an initial structure
-with the bundled OpenFold inference code or start from a user-provided PDB.
+trFlow generates alternative protein conformations from an A3M
+multiple-sequence alignment (MSA). The first A3M record supplies the target
+sequence; an optional FASTA file can be provided for strict cross-validation.
+trFlow can obtain an initial structure with the bundled OpenFold inference code
+or start from a user-provided PDB.
 
 The prediction pipeline contains three stages:
 
@@ -89,7 +91,8 @@ The command-line interface follows the form:
 trFlow predict INPUT [OPTIONS]
 ```
 
-`INPUT` may be either a JSON run configuration or a FASTA file.
+`INPUT` may be a JSON run configuration, an A3M file, or a FASTA file.
+Direct A3M input is recommended.
 
 ### Predict from JSON
 
@@ -102,18 +105,32 @@ trFlow predict example/example_input.json
 trFlow predict example/example_batch_input.json
 ```
 
-### Predict directly from FASTA and A3M
+### Predict directly from A3M
 
 ```bash
-trFlow predict example/fasta/6HKR_7OXW.fasta \
-  --msa example/msa/6HKR_7OXW.a3m --output-dir outputs \
+trFlow predict example/msa/6HKR_7OXW.a3m \
+  --output-dir outputs \
   --models Xray,NMR --sample-num 10
+```
+
+The first A3M record must be the ungapped target sequence. To cross-check it
+against a separate FASTA file:
+
+```bash
+trFlow predict example/msa/6HKR_7OXW.a3m \
+  --fasta example/fasta/6HKR_7OXW.fasta --output-dir outputs
 ```
 
 To start from an existing structure instead of running OpenFold:
 
 ```bash
-trFlow predict sequence.fasta --msa alignment.a3m --init-pdb initial.pdb --output-dir outputs
+trFlow predict alignment.a3m --init-pdb initial.pdb --output-dir outputs
+```
+
+The original positional FASTA form remains supported:
+
+```bash
+trFlow predict sequence.fasta --msa alignment.a3m --output-dir outputs
 ```
 
 Run `trFlow predict --help` for all available options.
@@ -130,8 +147,9 @@ python run_trflow.py predict example/example_input.json
 
 | Option | Description |
 | --- | --- |
-| `--msa FILE` | A3M alignment for FASTA input |
-| `--name NAME` | Sample name for FASTA input |
+| `--fasta FILE` | Optional FASTA used to validate the first A3M record |
+| `--msa FILE` | A3M alignment when using positional FASTA input |
+| `--name NAME` | Sample name for direct input |
 | `--init-pdb FILE` | Use an existing initial structure |
 | `--env FILE` | Use a different environment configuration |
 | `--output-dir DIR` | Override the output directory |
@@ -158,7 +176,6 @@ a reproducible run is required. The effective run seed is recorded in
   "samples": [
     {
       "name": "8CRJ_8CRI",
-      "fasta_path": "example/fasta/8CRJ_8CRI.fasta",
       "msa_path": "example/msa/8CRJ_8CRI.a3m",
       "init_pdb": null
     }
@@ -179,6 +196,10 @@ a reproducible run is required. The effective run seed is recorded in
 
 Multiple entries in `samples` are processed as a batch. Values supplied on the
 command line override the corresponding JSON options.
+
+The optional `fasta_path` field enables strict sequence cross-validation.
+When it is omitted, the target sequence is read from the first A3M record.
+FASTA/A3M sequence mismatches are rejected.
 
 ## Output
 

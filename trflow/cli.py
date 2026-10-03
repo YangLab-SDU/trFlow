@@ -5,9 +5,9 @@ Primary interface::
     trFlow predict INPUT [options]
     trFlow evaluate --pred-dir PREDICTIONS --native-dir REFERENCES [options]
 
-``INPUT`` may be a JSON run configuration or a FASTA file. The original
-``python -m trFlow``/``python -m trflow`` and ``--input``/``--fasta``
-forms remain accepted for compatibility.
+``INPUT`` may be a JSON run configuration, an A3M file, or a FASTA file.
+For A3M input, the first record is the target sequence and an optional FASTA
+can be supplied for strict cross-validation.
 """
 from __future__ import annotations
 
@@ -37,10 +37,10 @@ def build_parser() -> argparse.ArgumentParser:
     commands = parser.add_subparsers(dest="command", required=True)
     predict = commands.add_parser(
         "predict",
-        help="predict conformations from JSON or FASTA + A3M input",
+        help="predict conformations from JSON, A3M, or FASTA + A3M input",
         description=(
             "Predict conformations. INPUT may be a JSON run configuration or "
-            "a FASTA file; FASTA input also requires --msa."
+            "an A3M file. FASTA input is also supported and requires --msa."
         ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
@@ -58,12 +58,14 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def _add_predict_arguments(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("input_path", nargs="?", help="input JSON or FASTA file")
-    legacy = parser.add_mutually_exclusive_group()
-    legacy.add_argument("--input", dest="input_json", help=argparse.SUPPRESS)
-    legacy.add_argument("--fasta", help=argparse.SUPPRESS)
+    parser.add_argument("input_path", nargs="?", help="input JSON, A3M, or FASTA file")
+    parser.add_argument("--input", dest="input_json", help=argparse.SUPPRESS)
+    parser.add_argument(
+        "--fasta",
+        help="optional FASTA to validate an A3M query (also supports legacy FASTA input with --msa)",
+    )
     parser.add_argument("--msa", help="A3M file (required for FASTA input)")
-    parser.add_argument("--name", help="sample name for FASTA input (default: FASTA stem)")
+    parser.add_argument("--name", help="sample name for direct input (default: input stem)")
     parser.add_argument(
         "--init-pdb", "--init_pdb", dest="init_pdb",
         help="optional initial PDB; skips OpenFold",
@@ -71,11 +73,11 @@ def _add_predict_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--env", default=None, help="environment configuration JSON")
     parser.add_argument(
         "--output-dir", "--output_dir", dest="output_dir", default=None,
-        help="output root (FASTA-mode default: outputs)",
+        help="output root (direct-input default: outputs)",
     )
     parser.add_argument(
         "--sample-num", "--sample_num", dest="sample_num", type=int, default=None,
-        help="number of conformations (FASTA-mode default: 1)",
+        help="number of conformations (direct-input default: 1)",
     )
     parser.add_argument("--models", default=None, help="comma-separated models: Xray,NMR")
     parser.add_argument("--parallel", action="store_true", help="parallelize intra-sample stages")
@@ -144,38 +146,58 @@ def _normalize_argv(argv: Optional[Sequence[str]]) -> list[str]:
 def _load_predict_config(
     args: argparse.Namespace, parser: argparse.ArgumentParser,
 ) -> tuple[UserConfig, str, str]:
-    provided = [value for value in (args.input_path, args.input_json, args.fasta) if value]
-    if len(provided) != 1:
-        parser.error("predict requires exactly one INPUT, --input, or --fasta value")
-
     if args.input_json:
-        input_json, fasta = args.input_json, None
-    elif args.fasta:
-        input_json, fasta = None, args.fasta
-    elif Path(args.input_path).suffix.lower() == ".json":
-        input_json, fasta = args.input_path, None
+        if args.input_path:
+            parser.error("use either INPUT or --input, not both")
+        if args.fasta or args.msa or args.name or args.init_pdb:
+            parser.error("--fasta, --msa, --name, and --init-pdb are invalid with JSON input")
+        return load_user_config(args.input_json), "JSON", args.input_json
+
+    if not args.input_path:
+        if not (args.fasta and args.msa):
+            parser.error("predict requires an INPUT JSON/A3M/FASTA file")
+        fasta = args.fasta
+        msa = args.msa
+        mode = "FASTA + A3M"
+        input_stem = Path(fasta).stem
+        input_label = f"{fasta} + {msa}"
     else:
-        input_json, fasta = None, args.input_path
+        suffix = Path(args.input_path).suffix.lower()
+        if suffix == ".json":
+            if args.fasta or args.msa or args.name or args.init_pdb:
+                parser.error("--fasta, --msa, --name, and --init-pdb are invalid with JSON input")
+            return load_user_config(args.input_path), "JSON", args.input_path
+        if suffix in {".a3m", ".a2m"}:
+            if args.msa:
+                parser.error("--msa is not used when INPUT is already an A3M file")
+            msa = args.input_path
+            fasta = args.fasta
+            mode = "A3M + FASTA validation" if fasta else "A3M"
+            input_stem = Path(msa).stem
+            input_label = f"{msa} + {fasta}" if fasta else msa
+        else:
+            if args.fasta:
+                parser.error("--fasta is only used with A3M INPUT or legacy --msa mode")
+            if not args.msa:
+                parser.error("--msa is required when INPUT is a FASTA file")
+            fasta = args.input_path
+            msa = args.msa
+            mode = "FASTA + A3M"
+            input_stem = Path(fasta).stem
+            input_label = f"{fasta} + {msa}"
 
-    if input_json:
-        if args.msa or args.name or args.init_pdb:
-            parser.error("--msa, --name, and --init-pdb are only valid with FASTA input")
-        return load_user_config(input_json), "JSON", input_json
-
-    if not args.msa:
-        parser.error("--msa is required when INPUT is a FASTA file")
     cfg = UserConfig(
         output_dir=args.output_dir or "outputs",
         samples=[SampleConfig(
-            name=args.name or Path(fasta).stem,
+            name=args.name or input_stem,
+            msa_path=msa,
             fasta_path=fasta,
-            msa_path=args.msa,
             seed=args.seed,
             init_pdb=args.init_pdb,
         )],
         options=RunOptions(sample_num=1),
     )
-    return cfg, "FASTA + A3M", f"{fasta} + {args.msa}"
+    return cfg, mode, input_label
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:

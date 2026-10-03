@@ -26,7 +26,7 @@ from .openfold_runner import run_openfold
 from .output import save_repr_npz, write_info_json, write_input_json
 from .sample import INIT_SOURCE, allocate_k, build_paths, run_path_generation
 from .seed import resolve_seed, set_seed, task_seed
-from .validation import read_fasta_sequence
+from .validation import resolve_target_sequence
 
 _MAX_EXPLORE_ITERS = 1000
 
@@ -45,13 +45,18 @@ def run_sample(sample: SampleConfig, options: RunOptions, env: EnvConfig, output
     seed = resolve_seed(sample.seed, options.seed)
     set_seed(seed)
 
-    raw_seq = read_fasta_sequence(sample.fasta_path)
+    raw_seq, sequence_source, query_header = resolve_target_sequence(sample)
     L = len(raw_seq)
     _validate_msa(sample, raw_seq)
 
     info = {
         "sample_name": sample.name,
         "seed": seed,
+        "sequence": {
+            "source": sequence_source,
+            "msa_query_header": query_header,
+            "length": L,
+        },
         "options": asdict_safe(options),
         "env": env_to_dict(env),
         "init": {},
@@ -82,7 +87,7 @@ def run_sample(sample: SampleConfig, options: RunOptions, env: EnvConfig, output
     init_len = _pdb_pseudo_beta_len(init_pdb_local)
     if init_len != L:
         raise ValueError(
-            f"[{sample.name}] init structure length {init_len} != fasta length {L}: {init_pdb_local}"
+            f"[{sample.name}] init structure length {init_len} != target length {L}: {init_pdb_local}"
         )
     info["init"] = {"source": init_source, "pdb": str(init_pdb_local)}
 
@@ -205,7 +210,7 @@ def _validate_msa(sample: SampleConfig, raw_seq: str) -> None:
         raise ValueError(f"[{sample.name}] empty msa: {sample.msa_path}")
     if msa.shape[1] != len(raw_seq):
         raise ValueError(
-            f"[{sample.name}] msa length {msa.shape[1]} != fasta length {len(raw_seq)}: {sample.msa_path}"
+            f"[{sample.name}] msa length {msa.shape[1]} != target length {len(raw_seq)}: {sample.msa_path}"
         )
 
 

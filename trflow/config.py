@@ -121,8 +121,8 @@ class RunOptions:
 @dataclass
 class SampleConfig:
     name: str
-    fasta_path: str
     msa_path: str
+    fasta_path: Optional[str] = None
     seed: Optional[int] = None
     init_pdb: Optional[str] = None
 

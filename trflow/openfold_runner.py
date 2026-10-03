@@ -42,7 +42,7 @@ def run_openfold(sample: SampleConfig, env: EnvConfig, sample_dir: Path, gpu_idx
 
     # -- stage inputs ------------------------------------------------
     fasta = staging / f"{name}.fasta"
-    _write_fasta(fasta, sample.fasta_path, name)
+    _write_fasta(fasta, sample, name)
     shutil.copy(sample.msa_path, staging / f"{name}.a3m")
     (staging / "lst.txt").write_text(f"{name}\n")
 
@@ -85,10 +85,10 @@ def run_openfold(sample: SampleConfig, env: EnvConfig, sample_dir: Path, gpu_idx
     return str(init_pdb)
 
 
-def _write_fasta(dst: Path, src_fasta: str, name: str) -> None:
-    from .validation import read_fasta_sequence
+def _write_fasta(dst: Path, sample: SampleConfig, name: str) -> None:
+    from .validation import resolve_target_sequence
 
-    seq = read_fasta_sequence(src_fasta)
+    seq, _sequence_source, _query_header = resolve_target_sequence(sample)
     dst.write_text(f">{name}\n{seq}\n")
 
 

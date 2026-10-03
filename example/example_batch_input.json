@@ -3,12 +3,10 @@
   "samples": [
     {
       "name": "8CRJ_8CRI",
-      "fasta_path": "example/fasta/8CRJ_8CRI.fasta",
       "msa_path": "example/msa/8CRJ_8CRI.a3m"
     },
     {
       "name": "6HKR_7OXW",
-      "fasta_path": "example/fasta/6HKR_7OXW.fasta",
       "msa_path": "example/msa/6HKR_7OXW.a3m"
     }
   ],

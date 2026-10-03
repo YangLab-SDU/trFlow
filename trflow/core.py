@@ -55,26 +55,36 @@ def mymsa_to_esmmsa(msa, input_type="msa", in_torch=False):
 
 
 def parse_a3m(filename, limit=20000):
-    """Parse an a3m file into an int array of shape ``[C, L]`` (21 letters + gap)."""
-    seqs = []
-    table = str.maketrans(dict.fromkeys(string.ascii_lowercase + "*"))
-    seq_len = None
-    try:
-        seq_len = len(open(filename).readlines()[1].strip())
-    except IndexError:
-        pass
-    count = 0
-    for line in open(filename):
-        if line == " ":
-            continue
-        if line[0] != ">":
-            line = line.rstrip().translate(table)
-            if seq_len is not None and len(line) != seq_len:
+    """Parse A3M records into an int array of shape [C, L].
+
+    Lowercase insertions are removed. Wrapped sequence records and blank lines
+    are accepted; records whose aligned length differs from the query are
+    skipped, preserving the behavior of the original inference code.
+    """
+    records = []
+    current = None
+    with open(filename, encoding="utf-8") as handle:
+        for raw_line in handle:
+            line = raw_line.strip()
+            if not line:
                 continue
-            seqs.append(line)
-            count += 1
-            if count >= limit:
-                break
+            if line.startswith(">"):
+                if current is not None:
+                    records.append("".join(current))
+                current = []
+            elif current is None:
+                raise ValueError(f"A3M sequence appears before its first header: {filename}")
+            else:
+                current.append(line)
+        if current is not None:
+            records.append("".join(current))
+
+    table = str.maketrans(dict.fromkeys(string.ascii_lowercase + "*"))
+    aligned = [record.translate(table) for record in records]
+    if not aligned:
+        return np.empty((0, 0), dtype=np.uint8)
+    query_len = len(aligned[0])
+    seqs = [sequence for sequence in aligned if len(sequence) == query_len][:limit]
 
     alphabet = np.array(list("ARNDCQEGHILKMFPSTWYV-"), dtype="|S1").view(np.uint8)
     msa = np.array([list(s) for s in seqs], dtype="|S1").view(np.uint8)
