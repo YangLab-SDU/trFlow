@@ -36,11 +36,36 @@ paths are required.
 
 ## Installation
 
-Clone or download this repository, then enter its root directory:
+### Step 1. Clone the repository
 
 ```bash
+git clone https://github.com/YangLab-SDU/trFlow.git
 cd trFlow
 ```
+
+### Step 2. Download the model weights
+
+Download the pretrained models and extract the four files directly into
+`models/`:
+
+```bash
+mkdir -p models
+wget http://yanglab.qd.sdu.edu.cn/trFlow/pretrained_models.tar.bz2
+tar -xjf pretrained_models.tar.bz2 -C models
+```
+
+The archive contains:
+
+| File | Description |
+| --- | --- |
+| `trflow_xray.pth` | trFlow Xray checkpoint |
+| `trflow_nmr.pth` | trFlow NMR checkpoint |
+| `esm_msa1_t12_100M_UR50S.pt` | ESM-MSA-1b weights |
+| `openfold_params_model_5_ptm.npz` | OpenFold `model_5_ptm` parameters |
+
+The default configuration expects these files in `models/`.
+
+### Step 3. Install the environment
 
 It is recommended to use `mamba` to manage the Python dependencies. Follow the
 [Mamba installation documentation](https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html)
@@ -67,21 +92,8 @@ canonical dependency definition. For a pip-only setup, create a Python 3.11
 environment, run `python -m pip install -r requirements.txt`, then install
 the command with `python -m pip install -e . --no-deps`.
 
-### Model files
-
-Place the following model files in `models/`:
-
-| File | Description |
-| --- | --- |
-| `trflow_xray.pth` | trFlow Xray checkpoint |
-| `trflow_nmr.pth` | trFlow NMR checkpoint |
-| `esm_msa1_t12_100M_UR50S.pt` | ESM-MSA-1b weights |
-| `openfold_params_model_5_ptm.npz` | OpenFold `model_5_ptm` parameters |
-
-The default configuration expects the files above in `models/`. The local
-`config/env_config.json` is intentionally ignored by Git; create it from the
-tracked template as shown above, then edit it when using different paths or
-GPU indices.
+The local `config/env_config.json` is intentionally ignored by Git. Edit the
+copy created above when using different model paths or GPU indices.
 
 ## Usage
 
