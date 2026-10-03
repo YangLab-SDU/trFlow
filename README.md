@@ -1,18 +1,15 @@
 <h1 align="center">trFlow: ultrafast all-atom protein conformational ensemble generation via conditional flow matching</h1>
 
 <p align="center">
-  Chenxiao Xiang<sup>1,#</sup>,
-  Kailong Zhao<sup>1,#</sup>,
-  <a href="mailto:zhenling@email.sdu.edu.cn">Zhenling Peng</a><sup>1,*</sup>,
-  <a href="mailto:wenkaiwang@sdu.edu.cn">Wenkai Wang</a><sup>1,*</sup>,
-  and <a href="mailto:yangjy@sdu.edu.cn">Jianyi Yang</a><sup>1,*</sup>
+  Chenxiao Xiang<sup>#</sup> &nbsp;&middot;&nbsp;
+  Kailong Zhao<sup>#</sup> &nbsp;&middot;&nbsp;
+  <a href="mailto:zhenling@email.sdu.edu.cn">Zhenling Peng</a><sup>*</sup> &nbsp;&middot;&nbsp;
+  <a href="mailto:wenkaiwang@sdu.edu.cn">Wenkai Wang</a><sup>*</sup> &nbsp;&middot;&nbsp;
+  <a href="mailto:yangjy@sdu.edu.cn">Jianyi Yang</a><sup>*</sup>
 </p>
 
 <p align="center">
-  <sup>1</sup>MOE Frontiers Science Center for Nonlinear Expectations,<br>
-  Research Center for Mathematics and Interdisciplinary Sciences,<br>
-  Shandong University, Qingdao 266237, China<br>
-  <sup>#</sup>Equal contribution &nbsp;&middot;&nbsp; <sup>*</sup>Corresponding authors
+  <sub>Shandong University &nbsp;&middot;&nbsp; <sup>#</sup>Equal contribution &nbsp;&middot;&nbsp; <sup>*</sup>Corresponding authors</sub>
 </p>
 
 <p align="center">
