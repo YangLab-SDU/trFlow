@@ -1,18 +1,12 @@
-```text
-                 oooooooooooo oooo
-   o8            888'     `8 `888
- o888oo oooo d8b 888          888   .ooooo.  oooo oooo    ooo
-  888   `888""8P 888oooo8     888  d88' `88b  `88. `88.  .8'
-  888    888     888    "     888  888   888   `88..]88..8'
-  888 .  888     888          888  888   888    `888'`888'
-  "888" d888b    888          888  `Y8bod8P'     `8'  `8'
-```
+<h1 align="center">trFlow</h1>
 
-# trFlow
+<p align="center"><strong>Protein conformation sampling with flow matching</strong></p>
 
-Protein conformation sampling with flow matching.
-
-[![Python 3.11](https://img.shields.io/badge/Python-3.11-blue?style=flat-square)](https://www.python.org/) [![PyTorch 2.6.0](https://img.shields.io/badge/PyTorch-2.6.0-ee4c2c?style=flat-square)](https://pytorch.org/)
+<p align="center">
+  <a href="https://www.python.org/"><img alt="Python 3.11" src="https://img.shields.io/badge/Python-3.11-3776AB?style=flat-square&logo=python&logoColor=white"></a>
+  <a href="https://pytorch.org/"><img alt="PyTorch 2.6.0" src="https://img.shields.io/badge/PyTorch-2.6.0-EE4C2C?style=flat-square&logo=pytorch&logoColor=white"></a>
+  <a href="LICENSE"><img alt="Apache 2.0 License" src="https://img.shields.io/badge/License-Apache%202.0-D22128?style=flat-square"></a>
+</p>
 
 ## Overview
 
@@ -264,9 +258,9 @@ Run the lightweight unit tests from the repository root:
 python -m unittest discover -s tests -v
 ```
 
-These tests do not run GPU inference; they cover the TMscore command behavior
-and portable output-path serialization. The complete GPU examples are the JSON
-configurations described above.
+These tests do not run GPU inference; they cover direct A3M input, sequence
+validation, TMscore command behavior, and portable output-path serialization.
+The complete GPU examples are the JSON configurations described above.
 
 ## Acknowledgements
 
