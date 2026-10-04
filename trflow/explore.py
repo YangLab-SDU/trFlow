@@ -100,9 +100,10 @@ def run_exploration(
     for iter_num in range(1, max_iters + 1):
         if iter_num == 1:
             # Seed structure: one denoise from the init structure (mirrors iteration 0
-            # of the original loop). Fixed steps=2 so exploration is deterministic.
+            # of the original loop). steps=2 gives one model forward; its
+            # intermediate time is sampled just as in flow_inferenceV3.py.
             inf_strudata = core.update_inf_strudata(
-                inf_strudata, pseudo_beta, prior, steps=2, random_step=False, random_step_size=False,
+                inf_strudata, pseudo_beta, prior, steps=2, random_step=False, random_step_size=True,
             )
             iter_output = core.get_stru_repr(inf_strudata)[-1]
         else:
