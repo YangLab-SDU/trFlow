@@ -105,7 +105,7 @@ be used together with `--msa`; direct A3M input is recommended.
 ### Predict from JSON
 
 Run the standard single-target example (`8CRJ_8CRI`) or the two-target
-batch example (`8CRJ_8CRI` and `6HKR_7OXW`). Both configurations run the
+batch example (`8CRJ_8CRI` and `2akl`). Both configurations run the
 complete pipeline and generate 10 conformations per target:
 
 ```bash
@@ -116,7 +116,7 @@ trFlow predict example/example_batch_input.json
 ### Predict directly from A3M
 
 ```bash
-trFlow predict example/msa/6HKR_7OXW.a3m \
+trFlow predict example/msa/2akl.a3m \
   --output-dir outputs \
   --models Xray,NMR --sample-num 10
 ```
@@ -125,8 +125,8 @@ The first A3M record must be the ungapped target sequence. To cross-check it
 against a separate FASTA file:
 
 ```bash
-trFlow predict example/msa/6HKR_7OXW.a3m \
-  --fasta example/fasta/6HKR_7OXW.fasta --output-dir outputs
+trFlow predict example/msa/8CRJ_8CRI.a3m \
+  --fasta example/fasta/8CRJ_8CRI.fasta --output-dir outputs
 ```
 
 To start from an existing structure instead of running OpenFold:

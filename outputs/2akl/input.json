@@ -1,8 +1,7 @@
 {
   "sample": {
-    "name": "6HKR_7OXW",
-    "fasta_path": "example/fasta/6HKR_7OXW.fasta",
-    "msa_path": "example/msa/6HKR_7OXW.a3m"
+    "name": "2akl",
+    "msa_path": "example/msa/2akl.a3m"
   },
   "options": {
     "sample_num": 10,

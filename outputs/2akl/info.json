@@ -1,6 +1,11 @@
 {
-  "sample_name": "6HKR_7OXW",
-  "seed": 1890441930,
+  "sample_name": "2akl",
+  "seed": 489877891,
+  "sequence": {
+    "source": "msa_first_record",
+    "msa_query_header": "2akl",
+    "length": 116
+  },
   "options": {
     "sample_num": 10,
     "geometric_exploration": true,
@@ -33,105 +38,105 @@
   },
   "init": {
     "source": "openfold",
-    "pdb": "outputs/6HKR_7OXW/6HKR_7OXW_init.pdb"
+    "pdb": "outputs/2akl/2akl_init.pdb"
   },
   "updated": {
     "Xray": {
-      "pdb": "outputs/6HKR_7OXW/6HKR_7OXW_updated_Xray.pdb",
-      "n_iters": 60,
+      "pdb": "outputs/2akl/2akl_updated_Xray.pdb",
+      "n_iters": 134,
       "converged": true,
-      "mean_plddt": 0.948
+      "mean_plddt": 0.909
     },
     "NMR": {
-      "pdb": "outputs/6HKR_7OXW/6HKR_7OXW_updated_NMR.pdb",
-      "n_iters": 127,
+      "pdb": "outputs/2akl/2akl_updated_NMR.pdb",
+      "n_iters": 62,
       "converged": true,
-      "mean_plddt": 0.871
+      "mean_plddt": 0.889
     }
   },
   "stage_times": {
-    "stage1_openfold": 20.18,
-    "stage1_repr_Xray": 1.1,
-    "stage1_repr_NMR": 1.12,
-    "stage2_explore_Xray": 9.38,
-    "stage2_explore_NMR": 19.84,
-    "stage3_generation": 5.79,
+    "stage1_openfold": 32.1,
+    "stage1_repr_Xray": 9.95,
+    "stage1_repr_NMR": 3.37,
+    "stage2_explore_Xray": 18.7,
+    "stage2_explore_NMR": 10.42,
+    "stage3_generation": 5.54,
     "total": {
-      "start": "2026-09-07T15:14:44",
-      "end": "2026-09-07T15:15:42",
-      "seconds": 57.56
+      "start": "2026-10-04T17:05:38",
+      "end": "2026-10-04T17:06:58",
+      "seconds": 80.3
     }
   },
   "predictions": [
     {
       "index": 1,
-      "file": "6HKR_7OXW_sample_001.pdb",
+      "file": "2akl_sample_001.pdb",
       "model": "Xray",
       "init_source": "init",
-      "mean_plddt": 0.761
+      "mean_plddt": 0.909
     },
     {
       "index": 2,
-      "file": "6HKR_7OXW_sample_002.pdb",
+      "file": "2akl_sample_002.pdb",
       "model": "Xray",
       "init_source": "init",
-      "mean_plddt": 0.898
+      "mean_plddt": 0.774
     },
     {
       "index": 3,
-      "file": "6HKR_7OXW_sample_003.pdb",
+      "file": "2akl_sample_003.pdb",
       "model": "Xray",
       "init_source": "init",
-      "mean_plddt": 0.892
+      "mean_plddt": 0.841
     },
     {
       "index": 4,
-      "file": "6HKR_7OXW_sample_004.pdb",
+      "file": "2akl_sample_004.pdb",
       "model": "Xray",
       "init_source": "updated",
-      "mean_plddt": 0.87
+      "mean_plddt": 0.832
     },
     {
       "index": 5,
-      "file": "6HKR_7OXW_sample_005.pdb",
+      "file": "2akl_sample_005.pdb",
       "model": "Xray",
       "init_source": "updated",
-      "mean_plddt": 0.824
+      "mean_plddt": 0.83
     },
     {
       "index": 6,
-      "file": "6HKR_7OXW_sample_006.pdb",
+      "file": "2akl_sample_006.pdb",
       "model": "Xray",
       "init_source": "updated",
-      "mean_plddt": 0.613
+      "mean_plddt": 0.836
     },
     {
       "index": 7,
-      "file": "6HKR_7OXW_sample_007.pdb",
+      "file": "2akl_sample_007.pdb",
       "model": "NMR",
       "init_source": "init",
-      "mean_plddt": 0.632
+      "mean_plddt": 0.83
     },
     {
       "index": 8,
-      "file": "6HKR_7OXW_sample_008.pdb",
+      "file": "2akl_sample_008.pdb",
       "model": "NMR",
       "init_source": "init",
-      "mean_plddt": 0.591
+      "mean_plddt": 0.656
     },
     {
       "index": 9,
-      "file": "6HKR_7OXW_sample_009.pdb",
+      "file": "2akl_sample_009.pdb",
       "model": "NMR",
       "init_source": "updated",
-      "mean_plddt": 0.786
+      "mean_plddt": 0.773
     },
     {
       "index": 10,
-      "file": "6HKR_7OXW_sample_010.pdb",
+      "file": "2akl_sample_010.pdb",
       "model": "NMR",
       "init_source": "updated",
-      "mean_plddt": 0.606
+      "mean_plddt": 0.777
     }
   ]
 }
