@@ -2,8 +2,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from trflow.cli import _load_predict_config, apply_cli, build_parser
-from trflow.config import SampleConfig
+from trflow.cli import _flow_display, _load_predict_config, apply_cli, build_parser
+from trflow.config import RunOptions, SampleConfig
 from trflow.core import parse_a3m
 from trflow.openfold_runner import _write_fasta
 from trflow.validation import (
@@ -134,6 +134,31 @@ class DirectInputCliTests(unittest.TestCase):
         )
         self.assertEqual(mode, "FASTA + A3M")
         self.assertEqual(cfg.samples[0].msa_path, "target.a3m")
+
+
+class FlowDisplayTests(unittest.TestCase):
+    def test_random_steps_and_sizes(self):
+        self.assertEqual(
+            _flow_display(RunOptions()),
+            ("random (2 or 8 steps)", "random"),
+        )
+
+    def test_fixed_steps_and_even_spacing(self):
+        options = RunOptions(
+            steps=5,
+            random_step=False,
+            random_step_size=False,
+        )
+        self.assertEqual(
+            _flow_display(options),
+            ("fixed (5 steps)", "evenly spaced"),
+        )
+
+    def test_single_step_ignores_spacing(self):
+        self.assertEqual(
+            _flow_display(RunOptions(single_step=True)),
+            ("single step", "n/a"),
+        )
 
 
 if __name__ == "__main__":
