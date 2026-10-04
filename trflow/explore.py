@@ -19,7 +19,7 @@ import torch
 from .flow_math import pseudo_beta_fn
 from .geometry import convert_dgram_37_to_39, dist_to_37, process_distribution_fast
 
-from .core import FlowInferenceCore, Inf_StruData, smooth_steps
+from .core import FlowInferenceCore, Inf_StruData
 
 
 def get_iter_pseudo_beta(core: FlowInferenceCore, inf_strudata: Inf_StruData, new_dist_39: torch.Tensor):
@@ -31,7 +31,11 @@ def get_iter_pseudo_beta(core: FlowInferenceCore, inf_strudata: Inf_StruData, ne
             reprs=inf_strudata.reprs["reprs"],
             _reprs=inf_strudata.reprs["reprs"],
             pred_gemos=inf_strudata.pred_gemo,
-            t_step=torch.tensor([smooth_steps(2)[1]], device=device, dtype=torch.float32),
+            t_step=torch.tensor(
+                [FlowInferenceCore.make_schedule(1, random_step_size=True)[1]],
+                device=device,
+                dtype=torch.float32,
+            ),
             noisy_cb_dist=new_dist_39,
             cb_mask=inf_strudata.cb_mask,
             noisy_cb=None,
@@ -100,10 +104,10 @@ def run_exploration(
     for iter_num in range(1, max_iters + 1):
         if iter_num == 1:
             # Seed structure: one denoise from the init structure (mirrors iteration 0
-            # of the original loop). steps=2 gives one model forward; its
+            # of the original loop). One model forward is used and its
             # intermediate time is sampled just as in flow_inferenceV3.py.
             inf_strudata = core.update_inf_strudata(
-                inf_strudata, pseudo_beta, prior, steps=2, random_step=False, random_step_size=True,
+                inf_strudata, pseudo_beta, prior, steps=1, random_step=False, random_step_size=True,
             )
             iter_output = core.get_stru_repr(inf_strudata)[-1]
         else:

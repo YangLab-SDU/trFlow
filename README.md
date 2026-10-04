@@ -159,9 +159,9 @@ to select a different ensemble size.
 | `--sample-num N` | Number of conformations to generate (default: 200) |
 | `--models Xray,NMR` | Select one or both trained models |
 | `--single-step` | Use one structure-model forward per sample |
-| `--steps N` | Set the flow schedule length |
-| `--no-random-step` | Use `--steps` instead of random step selection |
-| `--no-random-step-size` | Use evenly spaced flow steps |
+| `--steps N` | Set the number of structure-model forwards |
+| `--no-random-step` | Use `--steps` instead of randomly choosing 1 or 7 forwards |
+| `--no-random-step-size` | Use evenly spaced flow times |
 | `--no-geometric-exploration` | Disable geometric exploration |
 | `--parallel` | Enable intra-sample multi-GPU parallelism |
 | `--save-repr-npz` | Save intermediate representations |
@@ -187,7 +187,7 @@ a reproducible run is required. The effective run seed is recorded in
     "sample_num": 10,
     "geometric_exploration": true,
     "single_step": false,
-    "steps": 2,
+    "steps": 7,
     "random_step": true,
     "random_step_size": true,
     "models": ["Xray", "NMR"],

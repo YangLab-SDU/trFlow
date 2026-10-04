@@ -128,8 +128,8 @@ def validate_user_config(cfg: UserConfig) -> UserConfig:
         raise ValueError("output_dir must not be empty")
     if cfg.options.sample_num < 1:
         raise ValueError("sample_num must be at least 1")
-    if cfg.options.steps < 2:
-        raise ValueError("steps must be at least 2")
+    if cfg.options.steps < 1:
+        raise ValueError("steps must be at least 1 model forward")
     if not cfg.options.models:
         raise ValueError("at least one model must be selected")
     cfg.output_dir = resolve(cfg.output_dir)

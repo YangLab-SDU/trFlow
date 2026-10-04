@@ -140,7 +140,7 @@ class FlowDisplayTests(unittest.TestCase):
     def test_random_steps_and_sizes(self):
         self.assertEqual(
             _flow_display(RunOptions()),
-            ("random (2 or 8 steps)", "random"),
+            ("random (1 or 7 model forwards)", "random"),
         )
 
     def test_fixed_steps_and_even_spacing(self):
@@ -151,13 +151,19 @@ class FlowDisplayTests(unittest.TestCase):
         )
         self.assertEqual(
             _flow_display(options),
-            ("fixed (5 steps)", "evenly spaced"),
+            ("fixed (5 model forwards)", "evenly spaced"),
+        )
+
+    def test_fixed_one_forward_uses_singular_label(self):
+        self.assertEqual(
+            _flow_display(RunOptions(steps=1, random_step=False)),
+            ("fixed (1 model forward)", "random"),
         )
 
     def test_single_step_reports_random_spacing(self):
         self.assertEqual(
             _flow_display(RunOptions(single_step=True)),
-            ("single step", "random"),
+            ("1 model forward", "random"),
         )
 
     def test_single_step_reports_even_spacing_when_requested(self):
@@ -165,7 +171,7 @@ class FlowDisplayTests(unittest.TestCase):
             _flow_display(
                 RunOptions(single_step=True, random_step_size=False)
             ),
-            ("single step", "evenly spaced"),
+            ("1 model forward", "evenly spaced"),
         )
 
 

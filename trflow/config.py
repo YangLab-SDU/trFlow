@@ -92,8 +92,8 @@ class RunOptions:
     sample_num: int = 200
     geometric_exploration: bool = True
     single_step: bool = False
-    steps: int = 2
-    random_step: bool = True          # per sample choose step in {2, 8}
+    steps: int = 7
+    random_step: bool = True          # per sample choose model forwards in {1, 7}
     random_step_size: bool = True     # Dirichlet smooth_steps step sizes
     models: List[str] = field(default_factory=lambda: ["Xray", "NMR"])
     parallel: bool = False
@@ -114,8 +114,8 @@ class RunOptions:
         return cls(**kwargs)
 
     def effective_steps(self) -> int:
-        """Schedule points setting; two points produce one model forward."""
-        return 2 if self.single_step else self.steps
+        """Number of structure-model forwards used for a sample."""
+        return 1 if self.single_step else self.steps
 
 
 @dataclass

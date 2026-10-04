@@ -91,10 +91,13 @@ def _add_predict_arguments(parser: argparse.ArgumentParser) -> None:
         dest="no_geometric_exploration", action="store_true",
         help="skip geometric exploration",
     )
-    parser.add_argument("--steps", type=int, default=None, help="flow schedule steps")
+    parser.add_argument(
+        "--steps", type=int, default=None,
+        help="number of structure-model forwards",
+    )
     parser.add_argument(
         "--no-random-step", action="store_false", dest="random_step", default=None,
-        help="use --steps instead of randomly choosing 2 or 8",
+        help="use --steps instead of randomly choosing 1 or 7 model forwards",
     )
     parser.add_argument(
         "--no-random-step-size", action="store_false", dest="random_step_size", default=None,
@@ -205,12 +208,15 @@ def _load_predict_config(
 def _flow_display(options: RunOptions) -> tuple[str, str]:
     """Return user-facing flow-step count and spacing descriptions."""
     if options.single_step:
-        flow = "single step"
+        flow = "1 model forward"
     else:
+        forward_label = (
+            "model forward" if options.steps == 1 else "model forwards"
+        )
         flow = (
-            "random (2 or 8 steps)"
+            "random (1 or 7 model forwards)"
             if options.random_step
-            else f"fixed ({options.steps} steps)"
+            else f"fixed ({options.steps} {forward_label})"
         )
     spacing = "random" if options.random_step_size else "evenly spaced"
     return flow, spacing

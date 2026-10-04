@@ -37,7 +37,7 @@ class ExplorationScheduleTests(unittest.TestCase):
             run_exploration(core, inf, pseudo_beta, prior=object(), max_iters=1)
 
         call = core.update_inf_strudata.call_args
-        self.assertEqual(call.kwargs["steps"], 2)
+        self.assertEqual(call.kwargs["steps"], 1)
         self.assertFalse(call.kwargs["random_step"])
         self.assertTrue(call.kwargs["random_step_size"])
         core.get_stru_repr.assert_called_once_with(inf)

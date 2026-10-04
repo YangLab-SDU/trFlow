@@ -7,7 +7,7 @@
     "sample_num": 10,
     "geometric_exploration": true,
     "single_step": false,
-    "steps": 2,
+    "steps": 7,
     "random_step": true,
     "random_step_size": true,
     "models": [

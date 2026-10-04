@@ -10,7 +10,7 @@ extraction, structure updates, single-step sampling). Key design points:
   * ESM weights are loaded once and cached (``trflow.models._ESM_CACHE``)
     instead of being reloaded on every ``get_repr`` call.
   * ``flow_mode`` is fixed to ``'iterative'`` (``dist_to_39`` encoding).
-  * ``single_step`` uses ``steps=2``. Its schedule ``[1, s, 0]`` retains a
+  * ``single_step`` uses one model forward. Its schedule ``[1, s, 0]`` retains a
     noisy intermediate state while ``schedule[1:]`` yields exactly one
     structure-model forward.
 """
@@ -239,22 +239,24 @@ class FlowInferenceCore:
     def make_schedule(steps: int, random_step_size: bool) -> np.ndarray:
         """Build the noise schedule for a configured number of flow steps.
 
-        ``steps`` produces ``steps-1`` forwards because ``schedule[1:]`` is
-        stored and ``get_stru_repr`` iterates over adjacent pairs. Therefore,
-        ``steps=2`` is the one-forward mode and still has an intermediate noisy
-        state ``s`` between 1 and 0.
+        ``steps`` is the user-facing number of structure-model forwards. The
+        full schedule therefore has ``steps + 2`` points: the initial noise
+        endpoint, one starting point per forward, and the final zero endpoint.
+        The initial endpoint is removed before ``get_stru_repr`` iterates over
+        adjacent pairs.
         """
-        if steps < 2:
-            raise ValueError("flow steps must be at least 2")
+        if steps < 1:
+            raise ValueError("model forwards must be at least 1")
+        schedule_intervals = steps + 1
         if random_step_size:
-            return smooth_steps(steps, alpha=5)[::-1]
-        return np.linspace(1.0, 0.0, steps + 1)
+            return smooth_steps(schedule_intervals, alpha=5)[::-1]
+        return np.linspace(1.0, 0.0, schedule_intervals + 1)
 
     def update_inf_strudata(self, inf_strudata, pseudo_beta, prior, steps, random_step, random_step_size):
         """Inject noise toward ``pseudo_beta`` and set the sampling schedule."""
         tmax = 1.0
         if random_step:
-            steps = random.choice([2, 8])
+            steps = random.choice([1, 7])
         schedule = self.make_schedule(steps, random_step_size)
         if tmax != 1.0:
             schedule = np.array([1.0] + list(schedule))
