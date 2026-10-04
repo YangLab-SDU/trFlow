@@ -205,12 +205,13 @@ def _load_predict_config(
 def _flow_display(options: RunOptions) -> tuple[str, str]:
     """Return user-facing flow-step count and spacing descriptions."""
     if options.single_step:
-        return "single step", "n/a"
-    flow = (
-        "random (2 or 8 steps)"
-        if options.random_step
-        else f"fixed ({options.steps} steps)"
-    )
+        flow = "single step"
+    else:
+        flow = (
+            "random (2 or 8 steps)"
+            if options.random_step
+            else f"fixed ({options.steps} steps)"
+        )
     spacing = "random" if options.random_step_size else "evenly spaced"
     return flow, spacing
 

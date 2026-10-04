@@ -10,9 +10,9 @@ extraction, structure updates, single-step sampling). Key design points:
   * ESM weights are loaded once and cached (``trflow.models._ESM_CACHE``)
     instead of being reloaded on every ``get_repr`` call.
   * ``flow_mode`` is fixed to ``'iterative'`` (``dist_to_39`` encoding).
-  * ``steps<=1`` (``single_step``) returns schedule ``[1.0, 0.0]`` and stores
-    the full schedule, so ``get_stru_repr`` runs exactly one structure-model
-    forward instead of crashing on an empty loop.
+  * ``single_step`` uses ``steps=2``. Its schedule ``[1, s, 0]`` retains a
+    noisy intermediate state while ``schedule[1:]`` yields exactly one
+    structure-model forward.
 """
 from __future__ import annotations
 
@@ -237,14 +237,15 @@ class FlowInferenceCore:
     # -- Sampling -----------------------------------------------------------
     @staticmethod
     def make_schedule(steps: int, random_step_size: bool) -> np.ndarray:
-        """Noise schedule over ``steps`` structure-model forwards + initial point.
+        """Build the noise schedule for a configured number of flow steps.
 
-        ``steps`` => ``steps-1`` forwards for ``steps>=2`` (``schedule[1:]`` is
-        stored, ``get_stru_repr`` zips pairs). ``steps<=1`` collapses to a single
-        ``[1.0, 0.0]`` schedule -> exactly one forward (the ``single_step`` mode).
+        ``steps`` produces ``steps-1`` forwards because ``schedule[1:]`` is
+        stored and ``get_stru_repr`` iterates over adjacent pairs. Therefore,
+        ``steps=2`` is the one-forward mode and still has an intermediate noisy
+        state ``s`` between 1 and 0.
         """
-        if steps <= 1:
-            return np.array([1.0, 0.0])
+        if steps < 2:
+            raise ValueError("flow steps must be at least 2")
         if random_step_size:
             return smooth_steps(steps, alpha=5)[::-1]
         return np.linspace(1.0, 0.0, steps + 1)
@@ -269,7 +270,7 @@ class FlowInferenceCore:
                 torch.sum((noisy_cb[None].unsqueeze(-2) - noisy_cb[None].unsqueeze(-3)) ** 2, dim=-1) ** 0.5
             )
         inf_strudata.t_step = torch.ones(1, device=self.device) * s
-        inf_strudata.schedule = schedule if steps <= 1 else schedule[1:]
+        inf_strudata.schedule = schedule[1:]
         return inf_strudata
 
     def get_stru_repr(self, inf_strudata) -> List[dict]:

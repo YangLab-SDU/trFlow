@@ -154,10 +154,18 @@ class FlowDisplayTests(unittest.TestCase):
             ("fixed (5 steps)", "evenly spaced"),
         )
 
-    def test_single_step_ignores_spacing(self):
+    def test_single_step_reports_random_spacing(self):
         self.assertEqual(
             _flow_display(RunOptions(single_step=True)),
-            ("single step", "n/a"),
+            ("single step", "random"),
+        )
+
+    def test_single_step_reports_even_spacing_when_requested(self):
+        self.assertEqual(
+            _flow_display(
+                RunOptions(single_step=True, random_step_size=False)
+            ),
+            ("single step", "evenly spaced"),
         )
 
 

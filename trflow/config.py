@@ -114,8 +114,8 @@ class RunOptions:
         return cls(**kwargs)
 
     def effective_steps(self) -> int:
-        """Steps actually used per structure forward. single_step overrides."""
-        return 1 if self.single_step else self.steps
+        """Schedule points setting; two points produce one model forward."""
+        return 2 if self.single_step else self.steps
 
 
 @dataclass
