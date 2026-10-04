@@ -62,7 +62,7 @@ def _add_predict_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--input", dest="input_json", help=argparse.SUPPRESS)
     parser.add_argument(
         "--fasta",
-        help="optional FASTA to validate an A3M query (also supports legacy FASTA input with --msa)",
+        help="optional FASTA to validate an A3M query (or FASTA input when used with --msa)",
     )
     parser.add_argument("--msa", help="A3M file (required for FASTA input)")
     parser.add_argument("--name", help="sample name for direct input (default: input stem)")
@@ -76,8 +76,9 @@ def _add_predict_arguments(parser: argparse.ArgumentParser) -> None:
         help="output root (direct-input default: outputs)",
     )
     parser.add_argument(
-        "--sample-num", "--sample_num", dest="sample_num", type=int, default=None,
-        help="number of conformations (direct-input default: 1)",
+        "--sample-num", "--sample_num", dest="sample_num", type=int,
+        default=argparse.SUPPRESS,
+        help="number of conformations (default: 200)",
     )
     parser.add_argument("--models", default=None, help="comma-separated models: Xray,NMR")
     parser.add_argument("--parallel", action="store_true", help="parallelize intra-sample stages")
@@ -106,8 +107,9 @@ def _add_predict_arguments(parser: argparse.ArgumentParser) -> None:
 def apply_cli(cfg: UserConfig, args: argparse.Namespace) -> UserConfig:
     if args.output_dir:
         cfg.output_dir = args.output_dir
-    if args.sample_num is not None:
-        cfg.options.sample_num = args.sample_num
+    sample_num = getattr(args, "sample_num", None)
+    if sample_num is not None:
+        cfg.options.sample_num = sample_num
     if args.models:
         requested = [item.strip() for item in args.models.split(",") if item.strip()]
         invalid = [item for item in requested if item not in MODEL_NAMES]
@@ -195,7 +197,7 @@ def _load_predict_config(
             seed=args.seed,
             init_pdb=args.init_pdb,
         )],
-        options=RunOptions(sample_num=1),
+        options=RunOptions(),
     )
     return cfg, mode, input_label
 

@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <img src="assets/trflow_workflow.png" alt="Overview of the trFlow conformational ensemble generation workflow" width="100%">
+  <img src="assets/trflow_workflowv2.png" alt="Overview of the trFlow conformational ensemble generation workflow" width="100%">
 </p>
 
 ## Overview
@@ -143,6 +143,8 @@ trFlow predict sequence.fasta --msa alignment.a3m --output-dir outputs
 ```
 
 Run `trFlow predict --help` for all available options.
+By default, trFlow generates 200 conformations per target; use `--sample-num`
+to select a different ensemble size.
 
 ### Common options
 
@@ -154,7 +156,7 @@ Run `trFlow predict --help` for all available options.
 | `--init-pdb FILE` | Use an existing initial structure |
 | `--env FILE` | Use a custom environment configuration |
 | `--output-dir DIR` | Set the output directory |
-| `--sample-num N` | Number of conformations to generate |
+| `--sample-num N` | Number of conformations to generate (default: 200) |
 | `--models Xray,NMR` | Select one or both trained models |
 | `--single-step` | Use one structure-model forward per sample |
 | `--steps N` | Set the flow schedule length |

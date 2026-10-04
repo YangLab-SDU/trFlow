@@ -2,7 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from trflow.cli import _load_predict_config, build_parser
+from trflow.cli import _load_predict_config, apply_cli, build_parser
 from trflow.config import SampleConfig
 from trflow.core import parse_a3m
 from trflow.openfold_runner import _write_fasta
@@ -104,6 +104,7 @@ class DirectInputCliTests(unittest.TestCase):
         self.assertEqual(sample.name, "target")
         self.assertEqual(sample.msa_path, "target.a3m")
         self.assertIsNone(sample.fasta_path)
+        self.assertEqual(cfg.options.sample_num, 200)
 
     def test_a3m_accepts_optional_validation_fasta(self):
         cfg, mode, _label = self._load(
@@ -111,6 +112,14 @@ class DirectInputCliTests(unittest.TestCase):
         )
         self.assertEqual(mode, "A3M + FASTA validation")
         self.assertEqual(cfg.samples[0].fasta_path, "target.fasta")
+
+    def test_sample_num_can_override_default(self):
+        parser = build_parser()
+        args = parser.parse_args(
+            ["predict", "target.a3m", "--sample-num", "7"]
+        )
+        cfg, _mode, _label = _load_predict_config(args, parser)
+        self.assertEqual(apply_cli(cfg, args).options.sample_num, 7)
 
     def test_positional_fasta_mode_remains_supported(self):
         cfg, mode, _label = self._load(
