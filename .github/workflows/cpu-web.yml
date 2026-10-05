@@ -1,0 +1,70 @@
+name: CPU and local web tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cpu-web-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cpu-web:
+    name: ${{ matrix.os }} / Python ${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.11"]
+    env:
+      PYTHONUTF8: "1"
+      PYTHONDONTWRITEBYTECODE: "1"
+      CUDA_VISIBLE_DEVICES: ""
+      BROWSER_CHANNEL: chromium
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: requirements-test.txt
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Install CPU test dependencies and editable package
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -r requirements-test.txt
+          python -m pip install --no-deps -e .
+      - name: Run full CPU unittest discovery
+        run: python tests/run_cpu_tests.py --report artifacts/cpu-results.json
+      - name: Build source distribution and wheel
+        run: python -m build
+      - name: Test installed wheel outside the source checkout
+        run: python tests/verify_wheel.py --wheel-dir dist --report artifacts/wheel-results.json
+      - name: Install pinned browser test dependencies
+        run: npm ci
+      - name: Install Chromium and Linux browser libraries
+        if: runner.os == 'Linux'
+        run: npx playwright install --with-deps chromium
+      - name: Install Chromium on Windows
+        if: runner.os == 'Windows'
+        run: npx playwright install chromium
+      - name: Run all mocked API and isolated fixture browser checks
+        run: python tests/run_browser_tests.py --output artifacts/browser
+      - name: Upload synthetic test reports and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cpu-web-${{ matrix.os }}-py${{ matrix.python }}
+          path: artifacts/
+          retention-days: 7
+          if-no-files-found: warn

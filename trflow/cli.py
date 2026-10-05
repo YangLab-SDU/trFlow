@@ -54,6 +54,13 @@ def build_parser() -> argparse.ArgumentParser:
     from .evaluation import add_arguments as add_evaluation_arguments
 
     add_evaluation_arguments(evaluate)
+    web = commands.add_parser(
+        "web", help="start the local web interface and prediction queue",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    from .web import add_arguments as add_web_arguments
+
+    add_web_arguments(web)
     return parser
 
 
@@ -143,7 +150,7 @@ def apply_cli(cfg: UserConfig, args: argparse.Namespace) -> UserConfig:
 def _normalize_argv(argv: Optional[Sequence[str]]) -> list[str]:
     """Insert ``predict`` for the pre-subcommand CLI forms."""
     values = list(sys.argv[1:] if argv is None else argv)
-    if values and values[0] not in {"predict", "evaluate", "-h", "--help"}:
+    if values and values[0] not in {"predict", "evaluate", "web", "-h", "--help"}:
         values.insert(0, "predict")
     return values
 
@@ -230,6 +237,10 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         from .evaluation import run as run_evaluation
 
         return run_evaluation(args)
+    if args.command == "web":
+        from .web import run as run_web
+
+        return run_web(args)
 
     cfg, mode, input_label = _load_predict_config(args, parser)
     cfg = validate_user_config(apply_cli(cfg, args))

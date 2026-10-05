@@ -1,0 +1,32 @@
+Vendored 3Dmol.js viewer
+=======================
+
+Package: 3dmol
+Pinned version: 2.5.5
+Upstream: https://github.com/3dmol/3Dmol.js
+Package metadata: https://registry.npmjs.org/3dmol/2.5.5
+Official distribution: https://registry.npmjs.org/3dmol/-/3dmol-2.5.5.tgz
+
+The registry SHA-512 integrity value was verified before extracting this
+official package. The viewer JavaScript is an unchanged, byte-for-byte copy of
+package/build/3Dmol-min.js from that distribution. No npm install scripts or
+third-party JavaScript were executed during extraction.
+
+Distribution integrity:
+sha512-kqNHouGqq3YfW58174tdERvm0XYTmP0tavQKOqIw1ouc2OJ7epkXEFrtEkVXV0clBZT2Ze2xHRC/qxX0u0qCdw==
+
+3Dmol-min.js size: 537792 bytes
+3Dmol-min.js SHA-256:
+f7cc78921ae72e7623e89cdd111434f58c2efddd2ffda1cd212644b406fb8016
+
+License notices
+---------------
+
+3Dmol-LICENSE.txt reproduces the package's complete LICENSE file, including
+the BSD-3-Clause terms for 3Dmol.js and its GLmol, Three.js and jQuery notices.
+3Dmol-min.js.LICENSE.txt reproduces the accompanying Webpack-extracted notice
+referenced by the JavaScript file's first line. These notices are distributed
+with the viewer in both source checkouts and Python wheels.
+
+The trFlow project's own license does not replace these third-party notices.
+The bundled viewer is served locally; browsers do not fetch it from a CDN.

@@ -1,0 +1,7 @@
+# Preserve the verified upstream bundle bytes on Windows and Linux checkouts.
+trflow/web_static/vendor/3Dmol-min.js -text
+# The packaged example and source example must remain byte-identical.
+example/msa/2akl.a3m text eol=lf -whitespace
+trflow/web_assets/example/2akl.a3m text eol=lf -whitespace
+# Retain upstream data and license formatting verbatim, not as edited source.
+trflow/web_static/vendor/*LICENSE.txt -whitespace

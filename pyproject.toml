@@ -25,8 +25,11 @@ dependencies = [
 trFlow = "trflow.cli:main"
 
 [tool.setuptools]
-py-modules = ["trFlow"]
+py-modules = ["trFlow", "run_web"]
 
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["trflow*", "esm*"]
+
+[tool.setuptools.package-data]
+trflow = ["web_static/*", "web_static/vendor/*", "web_assets/example/*.a3m"]

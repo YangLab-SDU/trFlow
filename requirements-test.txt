@@ -1,0 +1,8 @@
+# CPU development/CI dependencies, not the full prediction environment.
+# Install torch==2.6.0 separately from https://download.pytorch.org/whl/cpu.
+numpy>=1.24,<2
+scipy>=1.10,<2
+biopython==1.80
+--only-binary=dm-tree
+dm-tree==0.1.9
+build>=1.2,<2

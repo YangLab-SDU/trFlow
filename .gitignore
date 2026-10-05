@@ -5,6 +5,9 @@ __pycache__/
 .eggs/
 .ipynb_checkpoints/
 .vscode/
+.venv*/
+venv/
+node_modules/
 
 # Model weights / checkpoints / parameters (large binaries, not committed)
 *.pt
@@ -19,25 +22,37 @@ __pycache__/
 
 # Local machine config (copy from config/env_config.json.template, keep private)
 config/env_config.json
+.env
+.env.*
+!.env.example
 
-# Run outputs (only the two curated examples below are versioned)
+# Run outputs (only the curated examples below are versioned)
 outputs/*
 !outputs/8CRJ_8CRI/
 !outputs/8CRJ_8CRI/*.json
 !outputs/8CRJ_8CRI/*.pdb
 !outputs/8CRJ_8CRI/predictions/
 !outputs/8CRJ_8CRI/predictions/*.pdb
-!outputs/6HKR_7OXW/
-!outputs/6HKR_7OXW/*.json
-!outputs/6HKR_7OXW/*.pdb
-!outputs/6HKR_7OXW/predictions/
-!outputs/6HKR_7OXW/predictions/*.pdb
+!outputs/2akl/
+!outputs/2akl/*.json
+!outputs/2akl/*.pdb
+!outputs/2akl/predictions/
+!outputs/2akl/predictions/*.pdb
+
+# Generated ensemble-analysis caches are not curated example data.
+outputs/*/web_analysis/
 
 # OpenFold parameters (5.6 GB, download separately)
 openfold/openfold/resources/params/
 
 # Misc
 *.log
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+playwright-report/
+test-results/
+artifacts/
 
 # Build artifacts
 build/

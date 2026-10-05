@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 440 300" fill="none" role="img" aria-labelledby="ensemble-title ensemble-description">
+  <title id="ensemble-title">Protein conformation ensemble</title>
+  <desc id="ensemble-description">An illustrative protein ribbon with alpha helices and beta sheets. Superimposed blue, turquoise and lavender conformations show two folded domains gently opening and closing. This is a schematic illustration, not a rendering of prediction data.</desc>
+  <defs>
+    <radialGradient id="ground"><stop stop-color="#9ebce9" stop-opacity=".19"/><stop offset="1" stop-color="#9ebce9" stop-opacity="0"/></radialGradient>
+    <filter id="ribbon-shadow" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="3" stdDeviation="2.8" flood-color="#295786" flood-opacity=".16"/>
+    </filter>
+    <g id="left-backbone" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M89 131C74 105 101 78 125 96C126 76 149 67 160 75M106 213C83 230 64 211 72 187C55 168 70 144 89 131M174 212C180 233 210 218 201 195M172 119C198 113 217 129 193 152"/>
+      <path d="M90 133C114 119 121 133 133 142M111 210C126 213 136 209 145 198M161 123C174 127 184 139 191 151M151 212C167 213 185 211 198 193"/>
+    </g>
+    <g id="right-backbone" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M244 170C224 151 230 131 249 120C237 99 254 80 267 83M267 83C261 61 280 48 297 65C320 47 341 64 334 85C355 88 368 113 341 126M343 177C349 207 325 219 303 203C283 225 257 208 262 185M327 101C335 118 330 128 312 124"/>
+      <path d="M267 112C267 124 260 130 253 139M308 112C300 125 297 131 290 142M331 165C319 174 305 182 293 182M263 181C275 182 285 180 295 170"/>
+    </g>
+    <g id="left-fold">
+      <use xlink:href="#left-backbone" opacity=".46"/>
+      <!-- Parallel beta strands are broad ribbon arrows, with a subtle lit edge. -->
+      <g fill="currentColor" stroke="currentColor" stroke-width=".7" stroke-linejoin="round">
+        <path d="M120 142L131 136L165 190L174 184L174 212L148 201L156 196Z"/>
+        <path d="M149 139L163 135L188 181L196 176L196 200L173 191L180 187Z"/>
+        <path d="M158 123L154 98L146 99L160 75L176 96L168 97L172 119Z"/>
+      </g>
+      <g stroke="#fff" stroke-width="1.1" stroke-linecap="round" opacity=".46">
+        <path d="M124 144L159 196M154 141L183 186M161 117L157 100"/>
+      </g>
+      <!-- A compact, coiled alpha helix wraps around the beta sheet. -->
+      <path d="M89 131C110 118 117 139 98 145C76 152 77 163 99 160C119 157 121 175 99 177C76 179 79 195 99 192C116 189 123 206 106 213" stroke="currentColor" stroke-width="9.2" stroke-linecap="round"/>
+      <path d="M89 130C110 117 117 138 98 144C76 151 77 162 99 159C119 156 121 174 99 176C76 178 79 194 99 191C116 188 123 205 106 212" stroke="#fff" stroke-width="1.7" stroke-linecap="round" opacity=".48"/>
+      <path d="M193 152C207 145 213 163 201 166C187 170 189 181 203 180C215 179 214 192 201 195" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+      <path d="M193 151C207 144 213 162 201 165C187 169 189 180 203 179C215 178 214 191 201 194" stroke="#fff" stroke-width="1.4" stroke-linecap="round" opacity=".42"/>
+    </g>
+    <g id="right-fold">
+      <use xlink:href="#right-backbone" opacity=".46"/>
+      <g fill="currentColor" stroke="currentColor" stroke-width=".7" stroke-linejoin="round">
+        <path d="M265 120L278 125L260 161L268 166L244 177L241 151L249 155Z"/>
+        <path d="M291 127L304 132L286 174L294 179L269 188L268 163L276 168Z"/>
+        <path d="M307 151L312 124L319 126L310 102L290 121L299 122L294 148Z"/>
+      </g>
+      <g stroke="#fff" stroke-width="1.1" stroke-linecap="round" opacity=".46">
+        <path d="M268 125L253 157M294 133L280 169M303 145L308 125"/>
+      </g>
+      <path d="M267 83C251 99 270 108 278 92C287 74 298 77 292 95C286 111 304 119 310 101C315 84 332 83 327 101" stroke="currentColor" stroke-width="9.1" stroke-linecap="round"/>
+      <path d="M267 82C251 98 270 107 278 91C287 73 298 76 292 94C286 110 304 118 310 100C315 83 332 82 327 100" stroke="#fff" stroke-width="1.7" stroke-linecap="round" opacity=".48"/>
+      <path d="M341 126C321 121 321 143 340 143C357 143 357 156 339 159C321 162 326 179 343 177" stroke="currentColor" stroke-width="8.7" stroke-linecap="round"/>
+      <path d="M341 125C321 120 321 142 340 142C357 142 357 155 339 158C321 161 326 178 343 176" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".48"/>
+    </g>
+  </defs>
+  <style>
+    .static-conformation { display: none; }
+    @media (prefers-reduced-motion: reduce) {
+      .moving-conformation { display: none; }
+      .static-conformation { display: inline; }
+    }
+  </style>
+  <ellipse cx="222" cy="265" rx="172" ry="21" fill="url(#ground)"/>
+  <!-- Persistent ghost conformations make the ensemble visible without motion. -->
+  <g color="#b4a0e7" opacity=".48">
+    <g transform="translate(-4 4) rotate(-3 153 166)"><use xlink:href="#left-fold"/></g>
+    <g transform="rotate(-8 217 185)"><use xlink:href="#right-fold"/></g>
+    <path d="M195 195C213 209 225 193 243 169" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"/>
+  </g>
+  <g color="#38b6b5" opacity=".43">
+    <g transform="translate(3 -3) rotate(3 153 166)"><use xlink:href="#left-fold"/></g>
+    <g transform="rotate(20 217 185)"><use xlink:href="#right-fold"/></g>
+    <path d="M195 195C210 207 228 199 246 186" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"/>
+  </g>
+  <!-- The blue conformation moves around the inter-domain hinge. -->
+  <g color="#3976d9" filter="url(#ribbon-shadow)">
+    <use xlink:href="#left-fold"/>
+    <g class="moving-conformation">
+      <path d="M198 193C215 209 225 193 243 169" stroke="currentColor" stroke-width="5.5" stroke-linecap="round">
+        <animate attributeName="d" values="M198 193C215 209 225 193 243 169;M198 193C210 208 228 201 246 186;M198 193C215 209 225 193 243 169" dur="9s" repeatCount="indefinite" calcMode="spline" keyTimes="0;.5;1" keySplines=".42 0 .58 1;.42 0 .58 1"/>
+      </path>
+      <g transform="rotate(-8 217 185)">
+        <animateTransform attributeName="transform" type="rotate" values="-8 217 185;20 217 185;-8 217 185" dur="9s" repeatCount="indefinite" calcMode="spline" keyTimes="0;.5;1" keySplines=".42 0 .58 1;.42 0 .58 1"/>
+        <use xlink:href="#right-fold"/>
+      </g>
+    </g>
+    <g class="static-conformation">
+      <path d="M198 193C215 209 228 196 246 174" stroke="currentColor" stroke-width="5.5" stroke-linecap="round"/>
+      <g transform="rotate(3 217 185)"><use xlink:href="#right-fold"/></g>
+    </g>
+  </g>
+  <circle cx="218" cy="196" r="4.2" fill="#fff" stroke="#7eabe7" stroke-width="1.6" opacity=".95"/>
+</svg>

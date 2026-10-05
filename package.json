@@ -1,0 +1,17 @@
+{
+  "name": "trflow-web-tests",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Development-only browser regressions for the local trFlow workbench",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test:browser": "python tests/run_browser_tests.py",
+    "test:sampling": "node tests/web_sampling_modes.cjs",
+    "test:i18n": "node tests/web_i18n_errors.cjs"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
+  }
+}
