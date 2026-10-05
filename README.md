@@ -37,19 +37,14 @@ paths are required.
 The supported Python version is **3.11**. Use a repository checkout and an
 editable installation for the complete prediction workflow: model checkpoints,
 OpenFold resources, examples, and local environment configuration are separate
-from the Python package.
+from the Python package. The command-line workflow is the primary interface,
+including on GPU servers and HPC systems; a browser is not required.
 
 | Workload | Runtime requirements | Platform notes |
 | --- | --- | --- |
-| Local Web UI and ensemble analysis | Python 3.11, NumPy, SciPy, and a modern browser | Native Windows and Linux; no model weights or CUDA needed to inspect existing PDB ensembles |
 | New ensemble prediction | Compatible NVIDIA GPU/driver, CUDA-enabled PyTorch, model checkpoints, and the OpenFold initialization dependencies | The supplied prediction environment is Linux-oriented; use the Linux stack inside WSL2 on Windows or a separately validated native environment |
 | TM-score evaluation | A compatible TMscore executable, in addition to the Python dependencies | The bundled binary is Linux x86-64; provide another executable with `--tmscore` on Windows or other architectures |
-
-CPU/Web checks and GPU prediction are different validation targets. A working
-browser interface, successful CPU tests, or CUDA-capable PyTorch alone does not
-establish that the full OpenFold/model pipeline is ready. End-to-end GPU
-prediction must be checked separately in the intended execution environment;
-the Web/CPU support described here does not imply a verified Linux GPU run.
+| Optional local Web UI and ensemble analysis | The same `trflow` environment and a modern browser | Native Windows and Linux; see the optional interface at the end of this README |
 
 ### Clone the repository
 
@@ -58,75 +53,34 @@ git clone https://github.com/YangLab-SDU/trFlow.git
 cd trFlow
 ```
 
-### Option A: local Web UI and CPU analysis
-
-This lightweight setup is useful for exploring existing predictions and for
-developing the Web interface. It intentionally does not install the GPU
-prediction stack. The commands below use the virtual environment's interpreter
-directly, so shell activation is not required.
-
-Windows PowerShell:
-
-```powershell
-py -3.11 -m venv .venv-web
-& .\.venv-web\Scripts\python.exe -m pip install --upgrade pip
-& .\.venv-web\Scripts\python.exe -m pip install -r requirements-web.txt
-& .\.venv-web\Scripts\python.exe -m pip install -e . --no-deps
-& .\.venv-web\Scripts\python.exe .\run_web.py --data-dir .\outputs\web-preview --no-browser
-```
-
-Linux Bash:
-
-```bash
-python3.11 -m venv .venv-web
-.venv-web/bin/python -m pip install --upgrade pip
-.venv-web/bin/python -m pip install -r requirements-web.txt
-.venv-web/bin/python -m pip install -e . --no-deps
-.venv-web/bin/python run_web.py --data-dir outputs/web-preview --no-browser
-```
-
-Open [http://127.0.0.1:8765](http://127.0.0.1:8765) in your browser. Existing
-results under `outputs/*/predictions/` can be imported automatically when their
-`info.json` is present. If no results are available, the workbench starts with
-an empty target list; viewing the submission form does not run inference.
-
-`--no-deps` is intentional here: `requirements-web.txt` supplies the analysis
-dependencies without downloading the full PyTorch/OpenFold stack. Do not submit
-new predictions from this CPU-only environment. Use Option B, or select a
-separately configured prediction interpreter as described below. The dedicated
-`web-preview` directory keeps this session separate from another workbench's
-persistent queue.
-
-If the Windows Python launcher is unavailable, replace `py -3.11` with the
-path to a Python 3.11 interpreter. The project does not require a change to the
-PowerShell execution policy.
-
-### Option B: GPU prediction environment
+### Create and activate the trflow environment
 
 The supplied `environment.yml` and `requirements.txt` use Python 3.11 and
 PyTorch 2.6.0 with CUDA 11.8. Install a compatible NVIDIA driver and the required
 model dependencies before submitting predictions. For Windows GPU use, run
 these Linux instructions inside a configured
-[WSL2 Linux environment](https://learn.microsoft.com/en-us/windows/wsl/install);
-the native Windows Web setup above does not install that environment.
+[WSL2 Linux environment](https://learn.microsoft.com/en-us/windows/wsl/install).
+A separately configured native Windows prediction environment must be validated
+for its model and OpenFold dependencies.
 
-Use [Mamba](https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html)
-or [Conda](https://www.anaconda.com/docs/getting-started/miniconda/install) to
-create the prediction environment. From the repository root in Linux Bash:
+Use [Conda](https://www.anaconda.com/docs/getting-started/miniconda/install) to
+create the `trflow` prediction environment. From the repository root in Linux
+Bash:
 
 ```bash
-mamba env create -f environment.yml
+conda env create -f environment.yml
 conda activate trflow
 python -m pip install -e . --no-deps
 cp -n config/env_config.json.template config/env_config.json
 ```
 
-`conda env create -f environment.yml` can be used instead of Mamba. For a
-pip-only installation, create a Python 3.11 environment, install
-`requirements.txt`, and then install the project with
-`python -m pip install -e . --no-deps`. The dependency files describe the Linux
-prediction stack; native Windows inference dependencies must be validated
-separately rather than assumed to be installed by the lightweight Web setup.
+If [Mamba](https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html)
+is installed, `mamba env create -f environment.yml` can replace the first command;
+activation and all subsequent commands still use the same `trflow` environment.
+Alternatively, create a Conda environment named `trflow` with Python 3.11,
+activate it, install `requirements.txt`, and then install the project with
+`python -m pip install -e . --no-deps`. The supplied dependency files describe
+the Linux prediction stack.
 
 Download the pretrained model weights separately and extract the four files
 directly into `models/`:
@@ -307,13 +261,87 @@ selected options are omitted.
 stage timing, initialization source, generated structures, model paths, and
 mean pLDDT values.
 
-## Local web interface
+## Evaluation
+
+`trFlow evaluate` compares predicted structures with one or more reference PDB
+files and writes RMSD and TM-score results to CSV:
+
+```bash
+trFlow evaluate --pred-dir outputs/8CRJ_8CRI/predictions --native-dir path/to/references --output outputs/evaluation.csv
+```
+
+TM-score calculations always use sequence alignment (`-seq`). By default the
+command uses the bundled Linux x86-64 executable at `bin/TMscore`. Use
+`--tmscore /path/to/TMscore` to select another executable, for example on a
+different platform.
+
+On native Windows, use a Windows-compatible executable, for example:
+
+```powershell
+trFlow evaluate --pred-dir outputs/8CRJ_8CRI/predictions --native-dir path/to/references --tmscore "C:\tools\TMscore.exe" --output outputs/evaluation.csv
+```
+
+The repository does not supply a Windows TMscore binary.
+
+## Development and validation
+
+Run the regression suite from the existing `trflow` environment:
+
+```bash
+conda activate trflow
+python -m unittest discover -s tests -v
+```
+
+The command also works in PowerShell with the configured `trflow` environment.
+See [tests/README.md](tests/README.md) for isolated CPU-only CI setup, packaging
+checks, and browser test dependencies. Do not replace CUDA-enabled PyTorch in a
+prediction environment merely to reproduce a CPU-only CI installation.
+Browser checks use synthetic fixtures or mocked APIs; they must not submit GPU
+jobs or delete real workbench data.
+
+The [CPU and local Web CI workflow](.github/workflows/cpu-web.yml) runs Python
+3.11 tests on Windows and Linux. Check its actual GitHub Actions result when
+verifying a particular revision; CPU/Web checks do not establish that the full
+GPU/OpenFold prediction environment is ready.
+
+The CPU suite covers input validation, sampling-step semantics with stub
+models, queue persistence, API boundaries, recoverable deletion, alignment,
+clustering, exports, and localized errors. These checks do not download model
+weights, run full OpenFold initialization, or perform end-to-end CUDA
+prediction. Passing Windows/Linux CPU checks is not a GPU performance or
+scientific-accuracy certification.
+
+To validate actual prediction in a fully configured GPU environment, run the
+example JSON configurations documented above and inspect their output and
+logs. Keep private machine configuration, generated workbench databases,
+browser screenshots, test artifacts, and newly generated user results out of
+public commits.
+
+## Acknowledgements
+
+This repository vendors portions of OpenFold and ESM used by the inference
+pipeline. Their original copyright and license notices are retained in the
+corresponding source files. The local web interface bundles 3Dmol.js 2.5.5 under
+the BSD 3-Clause license; its license and included third-party notices are
+retained in `trflow/web_static/vendor/`.
+Model weights are distributed separately.
+
+## Optional local web interface
+
+The browser interface is optional. Server and HPC users can use the command-line
+prediction and evaluation workflows without running a Web service.
+The interface reuses the same configured `trflow` environment described above;
+no separate Web environment or additional installation is required. NumPy and
+SciPy for structure analysis are already included in that environment. The Web
+interface and CPU analysis run natively on Windows and Linux; new predictions
+still require the configured model, CUDA, and initialization dependencies.
 
 ### Start the workbench
 
-Start the local workbench from the installed trFlow environment:
+Activate the existing environment and start the local workbench:
 
 ```bash
+conda activate trflow
 trFlow web
 ```
 
@@ -327,13 +355,10 @@ python run_web.py
 These entry points accept the same options in Windows PowerShell and Linux
 Bash. Pass `--no-browser` to open the page manually.
 
-The default prediction interpreter is the Python interpreter running the
-server. `--python` can select another configured interpreter for prediction;
-CPU alignment and clustering use the server's own NumPy/SciPy environment.
-The selected prediction interpreter must be able to import this checkout and
-load its configured model assets. When using WSL2 for GPU inference, run the
-server and prediction environment inside WSL2 rather than passing a Linux
-executable path to a native Windows process.
+Prediction, alignment, and clustering use the active `trflow` environment by
+default. When the prediction stack runs inside WSL2, start the optional Web
+service in that same environment rather than mixing Windows and Linux
+interpreters.
 
 The interface opens in English. Use the language selector in the header to
 switch between English and Chinese; the preference is retained across the
@@ -475,7 +500,7 @@ Optional startup settings:
 
 ```bash
 trFlow web --port 8765 --data-dir outputs/web --no-browser
-trFlow web --env config/env_config.json --python /path/to/trflow/python
+trFlow web --env config/env_config.json
 ```
 
 The server binds to `127.0.0.1` and validates request hosts and origins. It is a
@@ -494,75 +519,3 @@ Node.js and Playwright are used only for development browser tests.
 Additional options are documented by `trFlow web --help`. Use
 `--no-import-existing` when a session should not import results from the
 repository's `outputs/` directory.
-
-## Evaluation
-
-`trFlow evaluate` compares predicted structures with one or more reference PDB
-files and writes RMSD and TM-score results to CSV:
-
-```bash
-trFlow evaluate --pred-dir outputs/8CRJ_8CRI/predictions --native-dir path/to/references --output outputs/evaluation.csv
-```
-
-TM-score calculations always use sequence alignment (`-seq`). By default the
-command uses the bundled Linux x86-64 executable at `bin/TMscore`. Use
-`--tmscore /path/to/TMscore` to select another executable, for example on a
-different platform.
-
-On native Windows, use a Windows-compatible executable, for example:
-
-```powershell
-trFlow evaluate --pred-dir outputs/8CRJ_8CRI/predictions --native-dir path/to/references --tmscore "C:\tools\TMscore.exe" --output outputs/evaluation.csv
-```
-
-The repository does not supply a Windows TMscore binary.
-
-## Development and validation
-
-The Web/analysis subset can run in the lightweight CPU environment:
-
-```bash
-python -m unittest discover -s tests -p "test_web*.py" -v
-```
-
-For the full CPU regression suite, install a CPU PyTorch build and the test
-dependencies in a Python 3.11 environment:
-
-```bash
-python -m pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu
-python -m pip install -r requirements-test.txt
-python -m pip install -e . --no-deps
-python -m unittest discover -s tests -v
-```
-
-The commands also work in PowerShell with a configured `python` interpreter.
-See [tests/README.md](tests/README.md) for the dependency setup and browser
-checks. Browser tests use synthetic fixtures or mocked APIs; they must not
-submit GPU jobs or delete real workbench data.
-
-The [CPU and local Web CI workflow](.github/workflows/cpu-web.yml) is configured
-for Python 3.11 on Windows and Linux. Check the actual GitHub Actions run before
-claiming a passing result for either platform; a configured job is not itself
-evidence that it has passed.
-
-The CPU suite covers input validation, sampling-step semantics with stub
-models, queue persistence, API boundaries, recoverable deletion, alignment,
-clustering, exports, and localized errors. These checks do not download model
-weights, run full OpenFold initialization, or perform end-to-end CUDA
-prediction. Passing Windows/Linux CPU checks is not a GPU performance or
-scientific-accuracy certification.
-
-To validate actual prediction in a fully configured GPU environment, run the
-example JSON configurations documented above and inspect their output and
-logs. Keep private machine configuration, generated workbench databases,
-browser screenshots, test artifacts, and newly generated user results out of
-public commits.
-
-## Acknowledgements
-
-This repository vendors portions of OpenFold and ESM used by the inference
-pipeline. Their original copyright and license notices are retained in the
-corresponding source files. The local web interface bundles 3Dmol.js 2.5.5 under
-the BSD 3-Clause license; its license and included third-party notices are
-retained in `trflow/web_static/vendor/`.
-Model weights are distributed separately.
