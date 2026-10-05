@@ -328,24 +328,34 @@ Model weights are distributed separately.
 
 ## Optional local web interface
 
-The browser interface is optional. Server and HPC users can use the command-line
-prediction and evaluation workflows without running a Web service.
-The interface reuses the same configured `trflow` environment described above;
-no separate Web environment or additional installation is required. NumPy and
-SciPy for structure analysis are already included in that environment. The Web
-interface and CPU analysis run natively on Windows and Linux; new predictions
-still require the configured model, CUDA, and initialization dependencies.
-
-### Start the workbench
-
-Activate the existing environment and start the local workbench:
+The Web interface is an optional way to submit targets and explore ensembles.
+It uses the same configured `trflow` environment; server and HPC users can
+continue using the CLI without a browser or Web service.
 
 ```bash
 conda activate trflow
 trFlow web
 ```
 
-Open `http://127.0.0.1:8765`. The source-tree entry points are also available:
+Open [http://127.0.0.1:8765](http://127.0.0.1:8765). No separate Python environment,
+Node.js, or frontend build is required. Prediction uses the same model and CUDA
+configuration as the CLI.
+
+- Upload/paste an A3M alignment or choose **Load example**, review the settings,
+  and submit the target. The default is 200 conformations.
+- Follow the queue, then explore completed structures in 3D and adjust clusters.
+- **Download results** exports aligned PDBs, representatives, and metadata for
+  the selected clustering. English and Chinese are available in the header.
+
+Data stays local in `outputs/web/` by default. Stop the server with `Ctrl+C`;
+closing the browser does not stop its queue. The workbench is a local,
+single-user service on `127.0.0.1`, not a public inference endpoint.
+
+<details>
+
+<summary>Detailed Web guide: settings, storage, recovery, exports, and security</summary>
+
+### Alternative entry points and interface language
 
 ```bash
 python -m trflow web
@@ -519,3 +529,5 @@ Node.js and Playwright are used only for development browser tests.
 Additional options are documented by `trFlow web --help`. Use
 `--no-import-existing` when a session should not import results from the
 repository's `outputs/` directory.
+
+</details>
