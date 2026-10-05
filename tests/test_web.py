@@ -57,7 +57,9 @@ class QueueTests(unittest.TestCase):
         self.assertEqual(result["queue_position"], 1)
         record = self.manager.store.get(result["id"])
         request = read_json(Path(record["job_path"]) / "request.json")
-        self.assertTrue(Path(request["output_dir"]).is_relative_to(self.root))
+        # Windows runners can expose TEMP through an 8.3 alias or a junction.
+        # Compare physical paths, matching the manager's resolved data root.
+        self.assertTrue(Path(request["output_dir"]).resolve().is_relative_to(self.root.resolve()))
 
     def test_non_object_options_and_boolean_integer_options_rejected(self):
         for options in ([], False, 0, "", {"sample_num": True}, {"seed": True}, {"models": ["unknown"]}):

@@ -51,7 +51,8 @@ def main() -> int:
             report["wheel_sha256"] = hashlib.sha256(wheel.read_bytes()).hexdigest()
             report["checks"].append("wheel includes static assets, notices, exact example MSA, and supported Python metadata")
         with tempfile.TemporaryDirectory(prefix="trflow wheel α 测试 ") as folder:
-            root = Path(folder)
+            # Match canonical module/CWD paths even when Windows TEMP is aliased.
+            root = Path(folder).resolve()
             installed = root / "installed library"
             working = root / "outside checkout 工作目录"
             working.mkdir()
