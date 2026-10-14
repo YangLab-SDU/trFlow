@@ -21,9 +21,7 @@ multiple-sequence alignment (MSA). Provide an alignment and, optionally, a
 starting PDB structure; otherwise, trFlow predicts the starting structure with
 OpenFold. The generated conformations are saved as PDB files.
 
-## Installation
-
-### Requirements
+## Hardware requirements
 
 The local installation below uses **Linux**, **Python 3.11**, and an
 **NVIDIA GPU** with CUDA-enabled PyTorch.
@@ -31,6 +29,8 @@ The local installation below uses **Linux**, **Python 3.11**, and an
 To run trFlow without installing it locally, open the
 [Google Colab notebook](https://colab.research.google.com/github/YangLab-SDU/trFlow/blob/main/trFlow.ipynb).
 Select a **GPU** runtime and follow the notebook's steps.
+
+## Installation
 
 ### Clone the repository
 
