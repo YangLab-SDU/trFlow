@@ -7,6 +7,10 @@
 </p>
 
 <p align="center">
+  <a href="https://colab.research.google.com/github/YangLab-SDU/trFlow/blob/main/trFlow.ipynb"><img src="https://img.shields.io/badge/Colab-Open_Notebook-F9AB00?logo=googlecolab&amp;logoColor=F9AB00" alt="Open in Colab" align="absmiddle"></a>&nbsp;&larr; <em>Online inference</em>
+</p>
+
+<p align="center">
   <img src="assets/trflow_workflowv2.png" alt="Overview of the trFlow conformational ensemble generation workflow" width="100%">
 </p>
 
