@@ -16,45 +16,21 @@
 
 ## Overview
 
-trFlow generates alternative protein conformations from an A3M
-multiple-sequence alignment (MSA). The first A3M record supplies the target
-sequence; an optional FASTA file can be provided for strict cross-validation.
-trFlow can obtain an initial structure with the bundled OpenFold inference code
-or start from a user-provided PDB.
-
-The prediction pipeline contains three stages:
-
-1. **Initialization and representation** — OpenFold predicts the initial
-   structure, while the selected Xray and/or NMR network processes the MSA.
-2. **Geometric exploration** — the predicted geometry is iteratively combined
-   with structural distances to obtain updated starting conformations.
-3. **Flow sampling** — FlowFormer combines structural, pair, and MSA
-   representations before the structure module generates the final ensemble.
-
-Geometric exploration can be disabled when only the initial-structure sampling
-paths are required.
+trFlow generates all-atom protein conformational ensembles from an A3M
+multiple-sequence alignment (MSA). Provide an alignment and, optionally, a
+starting PDB structure; otherwise, trFlow predicts the starting structure with
+OpenFold. The generated conformations are saved as PDB files.
 
 ## Installation
 
-### Requirements and platform scope
+### Requirements
 
-The supported Python version is **3.11**. Use a repository checkout and an
-editable installation for the complete prediction workflow: model checkpoints,
-OpenFold resources, examples, and local environment configuration are separate
-from the Python package. The command-line workflow is the primary interface,
-including on GPU servers and HPC systems; a browser is not required.
+The local installation below uses **Linux**, **Python 3.11**, and an
+**NVIDIA GPU** with CUDA-enabled PyTorch.
 
-For online inference without a local installation, open the
+To run trFlow without installing it locally, open the
 [Google Colab notebook](https://colab.research.google.com/github/YangLab-SDU/trFlow/blob/main/trFlow.ipynb).
-It provides step-by-step instructions to upload an A3M alignment, optionally
-supply a starting PDB, generate conformations, explore the ensemble, and
-download the results. Select a GPU runtime before running the notebook.
-
-| Workload | Runtime requirements | Platform notes |
-| --- | --- | --- |
-| New ensemble prediction | Compatible NVIDIA GPU/driver, CUDA-enabled PyTorch, model checkpoints, and the OpenFold initialization dependencies | The supplied prediction environment is Linux-oriented; use the Linux stack inside WSL2 on Windows or a separately validated native environment |
-| TM-score evaluation | A compatible TMscore executable, in addition to the Python dependencies | The bundled binary is Linux x86-64; provide another executable with `--tmscore` on Windows or other architectures |
-| Optional local Web UI and ensemble analysis | The same `trflow` environment and a modern browser | Native Windows and Linux; see the optional interface at the end of this README |
+Select a **GPU** runtime and follow the notebook's steps.
 
 ### Clone the repository
 
@@ -65,17 +41,8 @@ cd trFlow
 
 ### Create and activate the trflow environment
 
-The supplied `environment.yml` and `requirements.txt` use Python 3.11 and
-PyTorch 2.6.0 with CUDA 11.8. Install a compatible NVIDIA driver and the required
-model dependencies before submitting predictions. For Windows GPU use, run
-these Linux instructions inside a configured
-[WSL2 Linux environment](https://learn.microsoft.com/en-us/windows/wsl/install).
-A separately configured native Windows prediction environment must be validated
-for its model and OpenFold dependencies.
-
 Use [Conda](https://www.anaconda.com/docs/getting-started/miniconda/install) to
-create the `trflow` prediction environment. From the repository root in Linux
-Bash:
+create the `trflow` environment with PyTorch 2.6.0 and CUDA 11.8:
 
 ```bash
 conda env create -f environment.yml
@@ -85,15 +52,11 @@ cp -n config/env_config.json.template config/env_config.json
 ```
 
 If [Mamba](https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html)
-is installed, `mamba env create -f environment.yml` can replace the first command;
-activation and all subsequent commands still use the same `trflow` environment.
-Alternatively, create a Conda environment named `trflow` with Python 3.11,
-activate it, install `requirements.txt`, and then install the project with
-`python -m pip install -e . --no-deps`. The supplied dependency files describe
-the Linux prediction stack.
+is installed, use `mamba env create -f environment.yml` for the first command.
 
-Download the pretrained model weights separately and extract the four files
-directly into `models/`:
+### Download model weights
+
+Download and extract the pretrained model weights into `models/`:
 
 ```bash
 mkdir -p models
@@ -110,25 +73,20 @@ The archive contains:
 | `esm_msa1_t12_100M_UR50S.pt` | ESM-MSA-1b weights |
 | `openfold_params_model_5_ptm.npz` | OpenFold `model_5_ptm` parameters |
 
-The default configuration expects these files in `models/`.
+### Configure and check the GPU
 
-Edit the local `config/env_config.json` to set model paths, GPU indices, and an
-OpenFold interpreter if initialization uses a separate environment. Relative
-environment paths resolve against the repository root. Keep this
-machine-specific file out of version control; the committed template documents
-the expected fields.
+The default settings in `config/env_config.json` use the model files in
+`models/` and GPU 0 (`"gpus": [0]`). Edit this file if you use another GPU or
+store the weights elsewhere. If OpenFold is installed in a separate
+environment, set `openfold.python` to that environment's Python executable.
 
-Before inference, check the selected prediction interpreter:
+Check that PyTorch can access your GPU:
 
 ```bash
 python -c "import torch; print(torch.__version__); print('CUDA available:', torch.cuda.is_available())"
 ```
 
-PyTorch documents the supported CPU and CUDA builds in its
-[previous-version installation instructions](https://pytorch.org/get-started/previous-versions/).
-The check above does not load checkpoints or validate OpenFold initialization.
-Supplying an initial PDB skips OpenFold initialization, but the remaining
-trFlow/ESM models and their prediction dependencies are still required.
+Make sure the check reports `CUDA available: True` before starting prediction.
 
 ## Usage
 
@@ -197,22 +155,21 @@ to select a different ensemble size.
 | `--output-dir DIR` | Set the output directory |
 | `--sample-num N` | Number of conformations to generate (default: 200) |
 | `--models Xray,NMR` | Select one or both trained models |
-| `--single-step` | Use one structure-model forward per sample |
-| `--steps N` | Set the number of structure-model forwards |
-| `--no-random-step` | Use `--steps` instead of randomly choosing 1 or 7 forwards |
+| `--single-step` | Use one sampling step per conformation |
+| `--steps N` | Set the number of sampling steps |
+| `--no-random-step` | Use a fixed step count from `--steps` |
 | `--no-random-step-size` | Use evenly spaced flow times |
 | `--no-geometric-exploration` | Disable geometric exploration |
 | `--parallel` | Enable intra-sample multi-GPU parallelism |
 | `--save-repr-npz` | Save intermediate representations |
 | `--seed N` | Set an optional reproducibility seed |
 
-`--steps` counts actual structure-model forwards, with a default of 7.
-`--single-step` overrides this to one forward. When random step selection is
-enabled, each sample uses either 1 or 7 forwards; disable it to use `--steps`.
+By default, each conformation uses either 1 or 7 sampling steps. Use
+`--single-step` for one-step generation, or `--no-random-step --steps N` for a
+fixed step count (`--steps` defaults to 7).
 
-No seed is fixed by default. Specify `--seed` or a JSON `seed` value only when
-a reproducible run is required. The effective run seed is recorded in
-`info.json`.
+Use `--seed N` to repeat a run with the same random seed. The seed is recorded
+in `info.json`.
 
 ## JSON input
 
@@ -243,9 +200,8 @@ a reproducible run is required. The effective run seed is recorded in
 Multiple entries in `samples` are processed as a batch. Command-line options
 take precedence over the corresponding JSON values.
 
-The optional `fasta_path` field enables strict sequence cross-validation.
-When it is omitted, the target sequence is read from the first A3M record.
-FASTA/A3M sequence mismatches are rejected.
+Add `fasta_path` to a sample if you want to check its target sequence against
+a FASTA file. Otherwise, trFlow reads the target from the first A3M record.
 
 ## Output
 
@@ -264,12 +220,9 @@ Each target is written to `{output_dir}/{sample_name}/`:
     `-- {sample_name}_sample_001.pdb ...
 ```
 
-Existing results, when available, can be inspected in `outputs/`; running the
-example configurations generates new results. Files that do not apply to the
-selected options are omitted.
-`input.json` stores the resolved run configuration, while `info.json` records
-stage timing, initialization source, generated structures, model paths, and
-mean pLDDT values.
+Find the generated PDB files in `predictions/`. `input.json` saves the run
+settings, and `info.json` records timing, model settings, and confidence scores.
+Intermediate files are included only when relevant to the selected options.
 
 ## Evaluation
 
@@ -292,40 +245,6 @@ trFlow evaluate --pred-dir outputs/8CRJ_8CRI/predictions --native-dir path/to/re
 ```
 
 The repository does not supply a Windows TMscore binary.
-
-## Development and validation
-
-Run the regression suite from the existing `trflow` environment:
-
-```bash
-conda activate trflow
-python -m unittest discover -s tests -v
-```
-
-The command also works in PowerShell with the configured `trflow` environment.
-See [tests/README.md](tests/README.md) for isolated CPU-only CI setup, packaging
-checks, and browser test dependencies. Do not replace CUDA-enabled PyTorch in a
-prediction environment merely to reproduce a CPU-only CI installation.
-Browser checks use synthetic fixtures or mocked APIs; they must not submit GPU
-jobs or delete real workbench data.
-
-The [CPU and local Web CI workflow](.github/workflows/cpu-web.yml) runs Python
-3.11 tests on Windows and Linux. Check its actual GitHub Actions result when
-verifying a particular revision; CPU/Web checks do not establish that the full
-GPU/OpenFold prediction environment is ready.
-
-The CPU suite covers input validation, sampling-step semantics with stub
-models, queue persistence, API boundaries, recoverable deletion, alignment,
-clustering, exports, and localized errors. These checks do not download model
-weights, run full OpenFold initialization, or perform end-to-end CUDA
-prediction. Passing Windows/Linux CPU checks is not a GPU performance or
-scientific-accuracy certification.
-
-To validate actual prediction in a fully configured GPU environment, run the
-example JSON configurations documented above and inspect their output and
-logs. Keep private machine configuration, generated workbench databases,
-browser screenshots, test artifacts, and newly generated user results out of
-public commits.
 
 ## Citation
 
@@ -356,20 +275,27 @@ the BSD 3-Clause license; its license and included third-party notices are
 retained in `trflow/web_static/vendor/`.
 Model weights are distributed separately.
 
+<details>
+
+<summary>Development and testing (for contributors)</summary>
+
+See [tests/README.md](tests/README.md) for test setup, packaging checks, and
+browser tests, and the [CI workflow](.github/workflows/cpu-web.yml) for automated
+checks.
+
+</details>
+
 ## Optional local web interface
 
-The Web interface is an optional way to submit targets and explore ensembles.
-It uses the same configured `trflow` environment; server and HPC users can
-continue using the CLI without a browser or Web service.
+The optional Web interface lets you submit targets and explore ensembles in a
+browser, using the same `trflow` environment.
 
 ```bash
 conda activate trflow
 trFlow web
 ```
 
-Open [http://127.0.0.1:8765](http://127.0.0.1:8765). No separate Python environment,
-Node.js, or frontend build is required. Prediction uses the same model and CUDA
-configuration as the CLI.
+Open [http://127.0.0.1:8765](http://127.0.0.1:8765).
 
 - Upload/paste an A3M alignment or choose **Load example**, review the settings,
   and submit the target. The default is 200 conformations.
@@ -392,22 +318,12 @@ python -m trflow web
 python run_web.py
 ```
 
-These entry points accept the same options in Windows PowerShell and Linux
-Bash. Pass `--no-browser` to open the page manually.
+Run these commands in your `trflow` environment. Pass `--no-browser` to open
+the page manually.
 
-Prediction, alignment, and clustering use the active `trflow` environment by
-default. When the prediction stack runs inside WSL2, start the optional Web
-service in that same environment rather than mixing Windows and Linux
-interpreters.
-
-The interface opens in English. Use the language selector in the header to
-switch between English and Chinese; the preference is retained across the
-workbench, target details, and subsequent visits.
-Application errors are localized too, including previously saved interrupted
-runs. Original model diagnostics are clearly marked and remain unchanged,
-along with logs and user-provided content, for troubleshooting. Changing the
-language preserves unsubmitted form values, uploaded files, and the viewer's
-current display state.
+Use the language selector in the header to switch between English and Chinese.
+Your choice is saved, and switching languages preserves the current form and
+viewer settings.
 
 ### Submit targets and select a generation mode
 
@@ -481,10 +397,7 @@ permanently erasing them. Existing result files outside the workbench are left
 untouched, and removed targets stay hidden after a service restart. The deletion
 notification offers **Undo** to restore a target; restoring a cancelled target
 does not automatically restart its prediction. The notification is temporary,
-but its expiry does not purge the saved recycle-bin data. The local API also
-provides `GET /api/recycle-bin` and
-`POST /api/recycle-bin/{target-id}/restore` with an empty JSON object for
-recovery after the notification has closed.
+but its expiry does not purge the saved recycle-bin data.
 
 ### Explore and export completed ensembles
 
@@ -553,8 +466,6 @@ protection of the local machine and its files.
 The frontend and 3D viewer assets are bundled. Viewing and analyzing local
 ensembles does not require an external CDN or uploading structures to a cloud
 service; initial dependency and model downloads still require network access.
-Node.js, npm, and a frontend build step are not required to run the workbench.
-Node.js and Playwright are used only for development browser tests.
 
 Additional options are documented by `trFlow web --help`. Use
 `--no-import-existing` when a session should not import results from the
