@@ -272,26 +272,6 @@ trFlow evaluate --pred-dir outputs/8CRJ_8CRI/predictions --native-dir path/to/re
 
 The repository does not supply a Windows TMscore binary.
 
-## Citation
-
-Please cite the following preprint if you use our code or models:
-
-Xiang, C., Zhao, K., Peng, Z., Wang, W., and Yang, J. (2026).
-[trFlow: ultrafast all-atom protein conformational ensemble generation via conditional flow matching](https://www.biorxiv.org/content/10.64898/2026.10.03.756422v1).
-*bioRxiv* (preprint). [doi:10.64898/2026.10.03.756422](https://doi.org/10.64898/2026.10.03.756422).
-
-```bibtex
-@article{trFlow,
-  author  = {Xiang, Chenxiao and Zhao, Kailong and Peng, Zhenling and Wang, Wenkai and Yang, Jianyi},
-  title   = {{trFlow}: ultrafast all-atom protein conformational ensemble generation via conditional flow matching},
-  journal = {bioRxiv},
-  year    = {2026},
-  doi     = {10.64898/2026.10.03.756422},
-  url     = {https://www.biorxiv.org/content/10.64898/2026.10.03.756422v1},
-  note    = {Preprint}
-}
-```
-
 ## Acknowledgements
 
 This repository vendors portions of OpenFold and ESM used by the inference
@@ -498,3 +478,23 @@ Additional options are documented by `trFlow web --help`. Use
 repository's `outputs/` directory.
 
 </details>
+
+## Citation
+
+Please cite the following preprint if you use our code or models:
+
+Xiang, C., Zhao, K., Peng, Z., Wang, W., and Yang, J. (2026).
+[trFlow: ultrafast all-atom protein conformational ensemble generation via conditional flow matching](https://www.biorxiv.org/content/10.64898/2026.10.03.756422v1).
+*bioRxiv* (preprint). [doi:10.64898/2026.10.03.756422](https://doi.org/10.64898/2026.10.03.756422).
+
+```bibtex
+@article{trFlow,
+  author  = {Xiang, Chenxiao and Zhao, Kailong and Peng, Zhenling and Wang, Wenkai and Yang, Jianyi},
+  title   = {{trFlow}: ultrafast all-atom protein conformational ensemble generation via conditional flow matching},
+  journal = {bioRxiv},
+  year    = {2026},
+  doi     = {10.64898/2026.10.03.756422},
+  url     = {https://www.biorxiv.org/content/10.64898/2026.10.03.756422v1},
+  note    = {Preprint}
+}
+```
