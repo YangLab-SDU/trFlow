@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <a href="https://colab.research.google.com/github/YangLab-SDU/trFlow/blob/main/trFlow.ipynb"><img src="https://img.shields.io/badge/Colab-Open_Notebook-F9AB00?logo=googlecolab&amp;logoColor=F9AB00" alt="Open in Colab" align="absmiddle"></a>&nbsp;&larr; <em>Online inference</em>
+  <a href="https://colab.research.google.com/github/YangLab-SDU/trFlow/blob/main/trFlow.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab" align="absmiddle"></a>&nbsp;&larr; <em>Online inference</em>
 </p>
 
 <p align="center">
@@ -43,6 +43,12 @@ editable installation for the complete prediction workflow: model checkpoints,
 OpenFold resources, examples, and local environment configuration are separate
 from the Python package. The command-line workflow is the primary interface,
 including on GPU servers and HPC systems; a browser is not required.
+
+For online inference without a local installation, open the
+[Google Colab notebook](https://colab.research.google.com/github/YangLab-SDU/trFlow/blob/main/trFlow.ipynb).
+It provides step-by-step instructions to upload an A3M alignment, optionally
+supply a starting PDB, generate conformations, explore the ensemble, and
+download the results. Select a GPU runtime before running the notebook.
 
 | Workload | Runtime requirements | Platform notes |
 | --- | --- | --- |
