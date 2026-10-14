@@ -32,14 +32,14 @@ Select a **GPU** runtime and follow the notebook's steps.
 
 ## Installation
 
-### Clone the repository
+### Step 1: Clone the repository
 
 ```bash
 git clone https://github.com/YangLab-SDU/trFlow.git
 cd trFlow
 ```
 
-### Create and activate the trflow environment
+### Step 2: Create and activate the trflow environment
 
 Use [Conda](https://www.anaconda.com/docs/getting-started/miniconda/install) to
 create the `trflow` environment with PyTorch 2.6.0 and CUDA 11.8:
@@ -54,7 +54,7 @@ cp -n config/env_config.json.template config/env_config.json
 If [Mamba](https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html)
 is installed, use `mamba env create -f environment.yml` for the first command.
 
-### Download model weights
+### Step 3: Download model weights
 
 Download and extract the pretrained model weights into `models/`:
 
@@ -73,7 +73,7 @@ The archive contains:
 | `esm_msa1_t12_100M_UR50S.pt` | ESM-MSA-1b weights |
 | `openfold_params_model_5_ptm.npz` | OpenFold `model_5_ptm` parameters |
 
-### Configure and check the GPU
+### Step 4: Configure and check the GPU
 
 The default settings in `config/env_config.json` use the model files in
 `models/` and GPU 0 (`"gpus": [0]`). Edit this file if you use another GPU or
@@ -90,27 +90,17 @@ Make sure the check reports `CUDA available: True` before starting prediction.
 
 ## Usage
 
-The command-line interface follows the form:
+Run the commands below from the repository root with the `trflow` environment
+activated. Use an A3M alignment directly, or a JSON configuration for
+single-target and batch runs.
 
 ```text
 trFlow predict INPUT [OPTIONS]
 ```
 
-`INPUT` may be a JSON run configuration or an A3M file. A FASTA file can also
-be used together with `--msa`; direct A3M input is recommended.
+### Quick start: predict from an A3M alignment
 
-### Predict from JSON
-
-Run the standard single-target example (`8CRJ_8CRI`) or the two-target
-batch example (`8CRJ_8CRI` and `2akl`). Both configurations run the
-complete pipeline and generate 10 conformations per target:
-
-```bash
-trFlow predict example/example_input.json
-trFlow predict example/example_batch_input.json
-```
-
-### Predict directly from A3M
+Generate 10 conformations from the supplied example alignment:
 
 ```bash
 trFlow predict example/msa/2akl.a3m \
@@ -118,60 +108,60 @@ trFlow predict example/msa/2akl.a3m \
   --models Xray,NMR --sample-num 10
 ```
 
-The first A3M record must be the ungapped target sequence. To cross-check it
-against a separate FASTA file:
+The first A3M record must be the ungapped target sequence. Replace the example
+path with your own alignment. By default, trFlow generates 200 conformations
+per target; use `--sample-num` to choose a different ensemble size.
+
+### Other input options
+
+#### Start from an existing PDB
+
+Supply a starting structure to skip OpenFold initialization:
+
+```bash
+trFlow predict alignment.a3m --init-pdb initial.pdb --output-dir outputs
+```
+
+#### Check the target sequence against a FASTA file
+
+Add `--fasta` to check that the target sequence in the A3M matches your FASTA:
 
 ```bash
 trFlow predict example/msa/8CRJ_8CRI.a3m \
   --fasta example/fasta/8CRJ_8CRI.fasta --output-dir outputs
 ```
 
-To start from an existing structure instead of running OpenFold:
+#### Use FASTA as the main input
 
-```bash
-trFlow predict alignment.a3m --init-pdb initial.pdb --output-dir outputs
-```
-
-To provide the target sequence explicitly, use a FASTA file together with its
-A3M alignment:
+Provide its A3M alignment with `--msa`:
 
 ```bash
 trFlow predict sequence.fasta --msa alignment.a3m --output-dir outputs
 ```
 
-Run `trFlow predict --help` for all available options.
-By default, trFlow generates 200 conformations per target; use `--sample-num`
-to select a different ensemble size.
+### Run from a JSON configuration
 
-### Common options
+Use JSON to save your settings or process several targets in one run. The
+supplied examples run the complete pipeline and generate 10 conformations
+per target.
 
-| Option | Description |
-| --- | --- |
-| `--fasta FILE` | Optional FASTA used to validate the first A3M record |
-| `--msa FILE` | A3M alignment when a FASTA file is used as `INPUT` |
-| `--name NAME` | Set the target name for direct A3M/FASTA input |
-| `--init-pdb FILE` | Use an existing initial structure |
-| `--env FILE` | Use a custom environment configuration |
-| `--output-dir DIR` | Set the output directory |
-| `--sample-num N` | Number of conformations to generate (default: 200) |
-| `--models Xray,NMR` | Select one or both trained models |
-| `--single-step` | Use one sampling step per conformation |
-| `--steps N` | Set the number of sampling steps |
-| `--no-random-step` | Use a fixed step count from `--steps` |
-| `--no-random-step-size` | Use evenly spaced flow times |
-| `--no-geometric-exploration` | Disable geometric exploration |
-| `--parallel` | Enable intra-sample multi-GPU parallelism |
-| `--save-repr-npz` | Save intermediate representations |
-| `--seed N` | Set an optional reproducibility seed |
+#### Single-target example
 
-By default, each conformation uses either 1 or 7 sampling steps. Use
-`--single-step` for one-step generation, or `--no-random-step --steps N` for a
-fixed step count (`--steps` defaults to 7).
+Run the `8CRJ_8CRI` example:
 
-Use `--seed N` to repeat a run with the same random seed. The seed is recorded
-in `info.json`.
+```bash
+trFlow predict example/example_input.json
+```
 
-## JSON input
+#### Batch example
+
+Run `8CRJ_8CRI` and `2akl` together:
+
+```bash
+trFlow predict example/example_batch_input.json
+```
+
+#### JSON format
 
 ```json
 {
@@ -197,11 +187,47 @@ in `info.json`.
 }
 ```
 
-Multiple entries in `samples` are processed as a batch. Command-line options
-take precedence over the corresponding JSON values.
+Add one entry to `samples` for each target. Command-line options override the
+corresponding JSON values. Add `fasta_path` to a sample if you want to check its
+target sequence against a FASTA file; otherwise, trFlow reads the target from
+the first A3M record.
 
-Add `fasta_path` to a sample if you want to check its target sequence against
-a FASTA file. Otherwise, trFlow reads the target from the first A3M record.
+### Common options
+
+| Option | Description |
+| --- | --- |
+| `--sample-num N` | Number of conformations to generate (default: 200) |
+| `--output-dir DIR` | Set the output directory |
+| `--name NAME` | Set the target name for direct A3M/FASTA input |
+| `--models Xray,NMR` | Select one or both trained models |
+| `--init-pdb FILE` | Use an existing initial structure |
+| `--fasta FILE` | Optional FASTA used to validate the first A3M record |
+| `--msa FILE` | A3M alignment when a FASTA file is used as `INPUT` |
+| `--seed N` | Set an optional reproducibility seed |
+
+Use `--seed N` to repeat a run with the same random seed. The seed is recorded
+in `info.json`. Run `trFlow predict --help` for all available options.
+
+<details>
+
+<summary>Advanced options: sampling and runtime settings</summary>
+
+| Option | Description |
+| --- | --- |
+| `--env FILE` | Use a custom environment configuration |
+| `--single-step` | Use one sampling step per conformation |
+| `--steps N` | Set the number of sampling steps |
+| `--no-random-step` | Use a fixed step count from `--steps` |
+| `--no-random-step-size` | Use evenly spaced flow times |
+| `--no-geometric-exploration` | Disable geometric exploration |
+| `--parallel` | Enable intra-sample multi-GPU parallelism |
+| `--save-repr-npz` | Save intermediate representations |
+
+By default, each conformation uses either 1 or 7 sampling steps. Use
+`--single-step` for one-step generation, or `--no-random-step --steps N` for a
+fixed step count (`--steps` defaults to 7).
+
+</details>
 
 ## Output
 
