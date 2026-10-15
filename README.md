@@ -29,12 +29,7 @@ The local installation below uses **Linux**, **Python 3.11**, and an
 To run trFlow without installing it locally, open the
 [Google Colab notebook](https://colab.research.google.com/github/YangLab-SDU/trFlow/blob/main/trFlow.ipynb).
 Select a **GPU** runtime and follow the notebook's steps.
-Run Step 1 to install the environment and model files, then run Step 2 to show
-the input panel. Paste a sequence, upload one FASTA, or use an existing A3M;
-upload controls appear after you run the cell. Sequence/FASTA inputs can generate
-an MSA after you confirm use of the public ColabFold service. Advanced MSA options
-are collapsed by default. Model files and MSAs use temporary runtime storage,
-not your Google Drive.
+
 
 ## Installation
 
