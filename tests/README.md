@@ -49,6 +49,15 @@ credentials, model downloads, model deserialization, or Colab session are used:
 python -m unittest discover -s tests -p test_colab_model_download.py -v
 ```
 
+`test_colab_input_msa.py` adds offline sequence/FASTA validation, the serial
+ColabFold MSA protocol, explicit-consent checks, ticket resumption, verified-cache
+reuse, response limits and safe in-memory archive handling. It never submits a
+sequence to a live service. `test_colab_viewer.py` renders synthetic geometry with
+the real embedded notebook viewer, checking its residue-color default and bounds.
+For an optional browser check, run `python tests/test_colab_viewer.py --serve-fixture`
+and open the printed loopback URL. Only this optional browser check loads 3Dmol
+from its pinned public CDN; the unit tests have no network dependency.
+
 ## Build and installed-package checks
 
 ```text
