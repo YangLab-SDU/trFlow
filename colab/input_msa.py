@@ -18,7 +18,8 @@ from urllib import error, parse, request as urllib_request
 
 
 API_URL = "https://api.colabfold.com"
-API_MODE = "env"  # Filtered UniRef + environmental sequences, as in ColabFold.
+API_MODES = {(True, True): "env", (False, True): "all",
+             (True, False): "env-nofilter", (False, False): "nofilter"}
 USER_AGENT = "trFlow-Colab/0.1 (https://github.com/YangLab-SDU/trFlow)"
 AA = frozenset("ACDEFGHIKLMNPQRSTVWYX")
 MAX_SEQUENCE = 10000  # Input guard, not a GPU-memory or prediction guarantee.
@@ -186,10 +187,11 @@ def _http_request(method, route, *, fields=None, limit, timeout):
         return b"".join(chunks)
 
 
-def _alignment_from_archive(data, sequence, check_time):
+def _alignment_from_archive(data, sequence, check_time, *, use_env=True):
     """Read only reviewed A3M members; never extract service-controlled paths."""
     if not isinstance(data, bytes) or not data or len(data) > MAX_ARCHIVE_BYTES:
         raise MSAError("The MSA archive is empty or too large.")
+    required_members = RESULT_MEMBERS if use_env else RESULT_MEMBERS[:1]
     members, total, count = {}, 0, 0
     try:
         with tarfile.open(fileobj=io.BytesIO(data), mode="r|gz") as archive:
@@ -204,7 +206,7 @@ def _alignment_from_archive(data, sequence, check_time):
                 total += member.size
                 if member.size < 0 or total > MAX_EXPANDED_BYTES:
                     raise MSAError("The expanded MSA archive is too large.")
-                if name not in RESULT_MEMBERS:
+                if name not in required_members:
                     continue
                 if not member.isfile() or name in members or member.size > MAX_A3M_BYTES:
                     raise MSAError("The MSA archive has invalid or duplicate alignment files.")
@@ -220,10 +222,10 @@ def _alignment_from_archive(data, sequence, check_time):
                 members[name] = content.decode("utf-8").replace("\x00", "")
     except (tarfile.TarError, OSError, UnicodeError, EOFError) as archive_error:
         raise MSAError("The MSA server did not return a readable alignment archive.") from archive_error
-    if set(members) != set(RESULT_MEMBERS):
-        raise MSAError("The MSA archive does not contain the expected UniRef and environmental alignments.")
+    if set(members) != set(required_members):
+        raise MSAError("The MSA archive does not contain the alignments for the selected databases.")
     output, seen, count = [">query\n" + sequence + "\n"], {sequence}, 1
-    for name in RESULT_MEMBERS:
+    for name in required_members:
         check_time()
         _, records = parse_a3m(members[name], expected_query=sequence)
         for header, aligned in records:
@@ -240,6 +242,7 @@ def _alignment_from_archive(data, sequence, check_time):
 
 
 def ensure_msa(sequence, cache_dir, *, allow_public=False, progress=None,
+               use_env=True, use_filter=True, timeout_minutes=None,
                requester=None, sleep=None, clock=None):
     """Reuse a verified runtime A3M or request one serial public MMseqs2 search.
 
@@ -248,12 +251,18 @@ def ensure_msa(sequence, cache_dir, *, allow_public=False, progress=None,
     is manufactured when the service fails. Existing A3M upload remains available.
     """
     sequence = normalize_sequence(sequence)
+    if type(use_env) is not bool or type(use_filter) is not bool:
+        raise MSAError("MSA database and filtering settings must be boolean values.")
+    if timeout_minutes is not None and (type(timeout_minutes) is not int or not 1 <= timeout_minutes <= 60):
+        raise MSAError("The MSA waiting limit must be a whole number from 1 to 60 minutes.")
+    mode = API_MODES[use_env, use_filter]
+    max_wait = MAX_WAIT_SECONDS if timeout_minutes is None else timeout_minutes * 60
     requester = requester or _http_request
     sleep, clock = sleep or time.sleep, clock or time.monotonic
     started = clock()
     query_hash = hashlib.sha256(sequence.encode()).hexdigest()
     identity = {"schema_version": 1, "query_sha256": query_hash,
-                "service": API_URL, "mode": API_MODE}
+                "service": API_URL, "mode": mode}
     key = hashlib.sha256(json.dumps(identity, sort_keys=True).encode()).hexdigest()
     directory = _safe_directory(_safe_directory(cache_dir) / key)
     alignment, receipt, ticket_path = (directory / name for name in ("alignment.a3m", "result.json", "ticket.json"))
@@ -263,8 +272,8 @@ def ensure_msa(sequence, cache_dir, *, allow_public=False, progress=None,
             progress(message)
 
     def check_time():
-        if clock() - started >= MAX_WAIT_SECONDS:
-            raise MSAError("MSA search timed out. Rerun Step 1 to resume, or upload an existing A3M.")
+        if clock() - started >= max_wait:
+            raise MSAError("MSA search timed out. Rerun Step 2 to resume, or upload an existing A3M.")
 
     def read_json(path):
         data = _read_file(path, 1024**2)
@@ -297,7 +306,7 @@ def ensure_msa(sequence, cache_dir, *, allow_public=False, progress=None,
             try:
                 data = requester(method, route, fields=fields,
                                  limit=MAX_ARCHIVE_BYTES if archive else 1024**2,
-                                 timeout=min(60, max(1, MAX_WAIT_SECONDS - (clock() - started))))
+                                 timeout=min(60, max(1, max_wait - (clock() - started))))
                 if not isinstance(data, bytes) or len(data) > (MAX_ARCHIVE_BYTES if archive else 1024**2):
                     raise MSAError("The MSA response exceeds the supported size.")
                 if archive:
@@ -316,7 +325,7 @@ def ensure_msa(sequence, cache_dir, *, allow_public=False, progress=None,
             if attempt + 1 < MAX_REQUEST_RETRIES:
                 note("MSA service temporarily unavailable; retrying serially")
                 sleep(5 * (attempt + 1))
-        raise MSAError("Could not reach the public MSA service. Rerun Step 1 or upload an existing A3M.")
+        raise MSAError("Could not reach the public MSA service. Rerun Step 2 or upload an existing A3M.")
 
     job = read_json(ticket_path)
     ticket = job.get("id")
@@ -327,7 +336,7 @@ def ensure_msa(sequence, cache_dir, *, allow_public=False, progress=None,
     if ticket is None:
         for attempt in range(MAX_SUBMISSIONS):
             note("Submitting one protein to the public ColabFold MSA service")
-            result = call("POST", "ticket/msa", fields={"q": ">101\n" + sequence + "\n", "mode": API_MODE})
+            result = call("POST", "ticket/msa", fields={"q": ">101\n" + sequence + "\n", "mode": mode})
             status = result["status"]
             if status in ("UNKNOWN", "RATELIMIT"):
                 if attempt + 1 == MAX_SUBMISSIONS:
@@ -356,7 +365,7 @@ def ensure_msa(sequence, cache_dir, *, allow_public=False, progress=None,
         sleep(POLL_SECONDS if status != "RATELIMIT" else 20)
     _write_json(ticket_path, dict(identity, id=ticket, state="complete"))
     note("Downloading and validating the generated MSA")
-    data, count = _alignment_from_archive(call("GET", "result/download/" + ticket, archive=True), sequence, check_time)
+    data, count = _alignment_from_archive(call("GET", "result/download/" + ticket, archive=True), sequence, check_time, use_env=use_env)
     check_time()
     _atomic_write(alignment, data)
     _write_json(receipt, dict(identity, sha256=hashlib.sha256(data).hexdigest(),

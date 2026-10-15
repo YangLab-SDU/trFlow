@@ -58,6 +58,11 @@ For an optional browser check, run `python tests/test_colab_viewer.py --serve-fi
 and open the printed loopback URL. Only this optional browser check loads 3Dmol
 from its pinned public CDN; the unit tests have no network dependency.
 
+`test_colab_input_form.py` covers the conditional Step 2 panel, collapsed MSA
+options, consent checks and safe form serialization. Its optional
+`--serve-fixture` mode exercises the same browser-side mounting and submission
+path as Colab, without uploading files or contacting an MSA service.
+
 ## Build and installed-package checks
 
 ```text

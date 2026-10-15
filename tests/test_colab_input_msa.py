@@ -163,6 +163,37 @@ class MSAClientTests(unittest.TestCase):
         self.assertEqual(self.elapsed, 3 * im.POLL_SECONDS)
         self.assertEqual(sum(method == "POST" for method, _, _ in self.service.calls), 1)
 
+    def test_advanced_database_and_filter_flags_use_official_modes(self):
+        for flags, expected_mode in im.API_MODES.items():
+            with self.subTest(flags=flags):
+                self.service.calls.clear()
+                result = self.ensure(use_env=flags[0], use_filter=flags[1])
+                post = next(call for call in self.service.calls if call[0] == "POST")
+                self.assertEqual(post[2]["fields"]["mode"], expected_mode)
+                _, records = im.parse_a3m(result.read_text(), QUERY)
+                self.assertEqual(len(records), 3 if flags[0] else 2)
+
+    def test_waiting_limit_change_reuses_same_verified_alignment(self):
+        result = self.ensure(timeout_minutes=10)
+        self.service.calls.clear()
+        self.assertEqual(self.ensure(timeout_minutes=60, allow_public=False), result)
+        self.assertEqual(self.service.calls, [])
+
+    def test_invalid_advanced_settings_are_rejected_before_network(self):
+        for settings in ({"use_env": 1}, {"use_filter": "yes"}, {"timeout_minutes": True},
+                         {"timeout_minutes": 0}, {"timeout_minutes": 61}, {"timeout_minutes": 1.5}):
+            with self.subTest(settings=settings), self.assertRaises(im.MSAError):
+                self.ensure(**settings)
+        self.assertEqual(self.service.calls, [])
+
+    def test_custom_waiting_limit_is_enforced_and_ticket_is_retained(self):
+        self.service.statuses = ["RUNNING"] * 20
+        with self.assertRaisesRegex(im.MSAError, "timed out"):
+            self.ensure(timeout_minutes=1)
+        self.assertGreaterEqual(self.elapsed, 60)
+        self.assertLess(self.elapsed, 70)
+        self.assertEqual(len(list(self.cache.rglob("ticket.json"))), 1)
+
     def test_cancelled_search_retains_ticket_and_resumes_without_post(self):
         self.service.statuses = ["RUNNING"]
         with self.assertRaises(KeyboardInterrupt):
@@ -249,9 +280,8 @@ class MSAClientTests(unittest.TestCase):
 
     def test_changed_sequence_or_mode_uses_separate_cache(self):
         first = self.ensure()
-        with patch.object(im, "API_MODE", "all"):
-            with self.assertRaises(im.MSAError):
-                self.ensure(allow_public=False)
+        with self.assertRaises(im.MSAError):
+            self.ensure(allow_public=False, use_env=False)
         self.assertEqual(len(list(self.cache.iterdir())), 2)
         self.assertTrue(first.is_file())
 
@@ -276,6 +306,12 @@ class ArchiveAndTransportTests(unittest.TestCase):
                         {name: ">wrong\nACDEYGHIK\n" for name in im.RESULT_MEMBERS}):
             with self.subTest(names=list(entries)), self.assertRaises(im.MSAError):
                 im._alignment_from_archive(archive_bytes(entries), QUERY, lambda: None)
+
+    def test_uniref_only_mode_does_not_require_environmental_archive_member(self):
+        data = archive_bytes({im.RESULT_MEMBERS[0]: ">q\n" + QUERY + "\n>hit\nACDEYGHIK\n"})
+        text, count = im._alignment_from_archive(data, QUERY, lambda: None, use_env=False)
+        self.assertEqual(count, 2)
+        im.parse_a3m(text.decode(), QUERY)
 
     def test_unsafe_paths_and_symlinks_are_never_extracted(self):
         for name in ("../uniref.a3m", "/uniref.a3m", "C:/uniref.a3m", "x\\uniref.a3m"):
@@ -344,6 +380,8 @@ class NotebookInputContractTests(unittest.TestCase):
     def setUpClass(cls):
         cls.notebook = json.loads((ROOT / "trFlow.ipynb").read_text(encoding="utf-8"))
         cls.setup = "".join(cls.notebook["cells"][2]["source"])
+        cls.input = next("".join(cell["source"]) for cell in cls.notebook["cells"]
+                         if cell.get("metadata", {}).get("id") == "trflow-input-prepare")
 
     def source_value(self, code, name):
         for node in ast.walk(ast.parse(code)):
@@ -356,25 +394,27 @@ class NotebookInputContractTests(unittest.TestCase):
         self.addCleanup(temporary.cleanup)
         colab = ModuleType("google.colab")
         colab.files = SimpleNamespace(upload=Mock(return_value=upload or {}))
+        colab.output = SimpleNamespace(eval_js=Mock(return_value={
+            "mode": mode, "sequence": text, "allow_public": consent,
+            "use_env": True, "use_filter": True, "timeout_minutes": 20}))
         google = ModuleType("google")
         google.colab = colab
         context = {"ROOT": Path(temporary.name), "Path": Path, "sys": sys,
-                   "importlib": importlib, "INPUT_MODE": mode,
-                   "QUERY_SEQUENCE": text, "ALLOW_PUBLIC_MSA": consent,
+                   "importlib": importlib,
                    "_cell_status": Mock()}
-        body = next(node.body for node in ast.parse(self.setup).body if isinstance(node, ast.Try))
+        body = next(node.body for node in ast.parse(self.input).body if isinstance(node, ast.Try))
         preflight = []
         for node in body:
             if (isinstance(node, ast.Expr) and isinstance(node.value, ast.Call)
                     and node.value.args and isinstance(node.value.args[0], ast.Constant)
-                    and node.value.args[0].value == "Checking GPU and workspace"):
+                    and node.value.args[0].value == "Preparing the input alignment"):
                 break
             preflight.append(node)
         with patch.dict(sys.modules, {"google": google, "google.colab": colab}):
-            exec(compile(ast.Module(body=preflight, type_ignores=[]), "step1-input-preflight", "exec"), context)
+            exec(compile(ast.Module(body=preflight, type_ignores=[]), "step2-input-preflight", "exec"), context)
         return context, colab.files.upload
 
-    def test_actual_step1_preflight_accepts_pasted_sequence_before_gpu_setup(self):
+    def test_actual_step2_preflight_accepts_pasted_sequence(self):
         context, upload = self.run_preflight("Paste sequence", text="acde fghik", consent=True)
         self.assertEqual(context["_input_query"], QUERY)
         self.assertEqual(context["_selected_a3m"], "")
@@ -382,34 +422,35 @@ class NotebookInputContractTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "did not finish"):
             context["read_input_settings"]()
 
-    def test_actual_step1_preflight_accepts_one_fasta_upload(self):
+    def test_actual_step2_preflight_accepts_one_fasta_upload(self):
         context, upload = self.run_preflight("Upload FASTA", upload={"protein.fa": (">public\n" + QUERY).encode()}, consent=True)
         self.assertEqual(context["_input_query"], QUERY)
         self.assertTrue(Path(context["_uploaded_fasta"]).is_file())
         upload.assert_called_once_with()
 
-    def test_actual_step1_uploaded_a3m_needs_no_public_consent(self):
+    def test_actual_step2_uploaded_a3m_needs_no_public_consent(self):
         context, _ = self.run_preflight("Upload A3M", upload={"protein.a3m": (">query\n" + QUERY).encode()})
         self.assertEqual(context["_input_query"], QUERY)
         self.assertTrue(Path(context["_selected_a3m"]).is_file())
 
-    def test_actual_step1_blocks_unconsented_sequence_and_invalid_fasta(self):
-        with self.assertRaisesRegex(ValueError, "ALLOW_PUBLIC_MSA"):
+    def test_actual_step2_blocks_unconsented_sequence_and_invalid_fasta(self):
+        with self.assertRaisesRegex(ValueError, "Confirm public MSA"):
             self.run_preflight("Paste sequence", text=QUERY)
         with self.assertRaisesRegex(ValueError, "exactly one"):
             self.run_preflight("Upload FASTA", upload={"two.fasta": b">one\nACD\n>two\nEFG"}, consent=True)
         with self.assertRaisesRegex(ValueError, "No A3M selected"):
             self.run_preflight("Upload A3M")
 
-    def test_actual_step1_changes_msa_and_clears_stale_prior_errors(self):
-        body = next(node.body for node in ast.parse(self.setup).body if isinstance(node, ast.Try))
+    def test_actual_step2_changes_msa_and_clears_stale_prior_errors(self):
+        body = next(node.body for node in ast.parse(self.input).body if isinstance(node, ast.Try))
         selected, collecting = [], False
         for node in body:
             if (isinstance(node, ast.Expr) and isinstance(node.value, ast.Call)
                     and node.value.args and isinstance(node.value.args[0], ast.Constant)
                     and node.value.args[0].value == "Preparing the input alignment"):
                 collecting = True
-            if isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == "MODEL_WEIGHT_SETTINGS" for t in node.targets):
+            if (isinstance(node, ast.Expr) and isinstance(node.value, ast.Call)
+                    and isinstance(node.value.func, ast.Attribute) and node.value.func.attr == "done"):
                 break
             if collecting:
                 selected.append(node)
@@ -417,9 +458,10 @@ class NotebookInputContractTests(unittest.TestCase):
         generate = Mock(return_value=Path("new.a3m"))
         context = {"Path": Path, "ROOT": ROOT, "_selected_a3m": "", "_input_query": QUERY,
                    "input_state": state, "ALLOW_PUBLIC_MSA": True, "_cell_status": Mock(),
+                   "INPUT_SETTINGS": {"use_env": True, "use_filter": True, "timeout_minutes": 20},
                    "im": SimpleNamespace(ensure_msa=generate),
                    "h": SimpleNamespace(validate_a3m=Mock(return_value={"query": QUERY, "records": 3}))}
-        exec(compile(ast.Module(body=selected, type_ignores=[]), "step1-publish-input", "exec"), context)
+        exec(compile(ast.Module(body=selected, type_ignores=[]), "step2-publish-input", "exec"), context)
         self.assertEqual(state["msa"], "new.a3m")
         self.assertEqual(state["pdb"], "")
         self.assertEqual(state["errors"], {})
@@ -427,23 +469,29 @@ class NotebookInputContractTests(unittest.TestCase):
         generate.assert_called_once()
 
     def test_canonical_client_is_embedded_verbatim(self):
-        source = self.source_value(self.setup, "INPUT_SOURCE")
+        source = self.source_value(self.input, "INPUT_SOURCE")
         self.assertEqual(source, MODULE_PATH.read_text(encoding="utf-8"))
         compile(source, "INPUT_SOURCE", "exec")
 
-    def test_step1_contains_all_input_modes_and_explicit_privacy_consent(self):
-        self.assertEqual(self.source_value(self.setup, "INPUT_MODE"), "Paste sequence")
-        self.assertIs(self.source_value(self.setup, "ALLOW_PUBLIC_MSA"), False)
-        for label in ("Upload FASTA", "Upload A3M", "public ColabFold", "Confidential", "confidential"):
-            self.assertTrue(label.lower() in self.setup.lower() or label.lower() in "".join(self.notebook["cells"][-1]["source"]).lower())
-        self.assertTrue(self.setup.index("_input_query=im.normalize_sequence") < self.setup.index("run(['nvidia-smi'"))
-        self.assertTrue(self.setup.index("_msa_check=h.validate_a3m") < self.setup.index("MODEL_WEIGHT_SETTINGS=dict"))
+    def test_step1_only_installs_and_step2_owns_input_preparation(self):
+        self.assertNotIn("INPUT_SOURCE", self.setup)
+        self.assertNotIn("SEQUENCE", self.setup)
+        self.assertNotIn("ensure_msa", self.setup)
+        self.assertIn("ensure_model_weights", self.setup)
+        self.assertIn("SEQUENCE=INPUT_SETTINGS['sequence']", self.input)
+        self.assertNotIn("QUERY_SEQUENCE", self.input)
+        self.assertIn("Run this cell", self.input)
+        self.assertIn("timeout_sec=None", self.input)
+        self.assertIn("use_env=INPUT_SETTINGS['use_env']", self.input)
+        self.assertIn("use_filter=INPUT_SETTINGS['use_filter']", self.input)
+        self.assertIn("timeout_minutes=INPUT_SETTINGS['timeout_minutes']", self.input)
 
     def test_generating_does_not_require_optional_msa_download_cell(self):
-        definitions = [node.name for node in ast.walk(ast.parse(self.setup)) if isinstance(node, ast.FunctionDef)]
+        definitions = [node.name for node in ast.walk(ast.parse(self.input)) if isinstance(node, ast.FunctionDef)]
         self.assertIn("save_one_upload", definitions)
         self.assertIn("read_input_settings", definitions)
-        optional = "".join(self.notebook["cells"][4]["source"])
+        optional = next("".join(cell["source"]) for cell in self.notebook["cells"]
+                        if cell.get("metadata", {}).get("id") == "user-cell-05")
         self.assertTrue(optional.startswith("# @title Step 2a · Download MSA (optional)"))
         self.assertNotIn("files.upload", optional)
 
@@ -458,7 +506,8 @@ class NotebookInputContractTests(unittest.TestCase):
         compile(source, "VIEWER_SOURCE", "exec")
 
     def test_result_zip_still_includes_prepared_msa_without_weights(self):
-        export = "".join(self.notebook["cells"][13]["source"])
+        export = next("".join(cell["source"]) for cell in self.notebook["cells"]
+                      if cell.get("metadata", {}).get("id") == "user-cell-14")
         self.assertIn("extras.append((Path(MSA_PATH),'inputs/'", export)
         self.assertIn("No weights, environment or unrelated Drive data", export)
 
