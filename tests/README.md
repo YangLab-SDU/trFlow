@@ -39,6 +39,16 @@ portable filenames, error codes/translations, CPU alignment/clustering, and ZIP
 contents without changing an existing workbench. The native analysis suite uses
 a fresh subprocess to avoid mixing platform-specific numerical-library runtimes.
 
+The Colab download tests (`test_colab_model_download.py`) use only the Python
+standard library and tiny temporary fixtures. They cover the public-file allowlist,
+pinned integrity checks, cache reuse, partial-transfer retention, cancellation,
+author-server fallback, and the embedded notebook-source contract. No Drive
+credentials, model downloads, model deserialization, or Colab session are used:
+
+```text
+python -m unittest discover -s tests -p test_colab_model_download.py -v
+```
+
 ## Build and installed-package checks
 
 ```text
